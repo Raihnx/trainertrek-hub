@@ -6,7 +6,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -83,15 +84,55 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Sidebar />
-        <div className="lg:pl-64">
-          <Header />
-          <main className="animate-fade-in p-6 lg:p-8">
-            <Outlet />
-          </main>
-        </div>
-      </div>
+      <AuthGate />
     </QueryClientProvider>
+  );
+}
+
+function AuthGate() {
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthed(!!session);
+      router.invalidate();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthed(!!data.session);
+      setReady(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router]);
+
+  const path = typeof window !== "undefined" ? window.location.pathname : "/";
+  const isAuthRoute = path.startsWith("/auth");
+
+  if (!ready) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
+  if (isAuthRoute) return <Outlet />;
+
+  if (!authed) {
+    if (typeof window !== "undefined") window.location.replace("/auth");
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Sidebar />
+      <div className="lg:pl-64">
+        <Header />
+        <main className="animate-fade-in p-6 lg:p-8">
+          <Outlet />
+        </main>
+      </div>
+    </div>
   );
 }
