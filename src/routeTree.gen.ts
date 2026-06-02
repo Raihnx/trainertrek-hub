@@ -14,6 +14,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MembershipsRouteImport } from './routes/memberships'
 import { Route as IncentivesRouteImport } from './routes/incentives'
 import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
@@ -43,6 +44,11 @@ const ClientsRoute = ClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AttendanceRoute = AttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
@@ -62,6 +68,7 @@ const ClientsIdRoute = ClientsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/attendance'
+    | '/auth'
     | '/clients'
     | '/incentives'
     | '/memberships'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/attendance'
+    | '/auth'
     | '/clients'
     | '/incentives'
     | '/memberships'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/attendance'
+    | '/auth'
     | '/clients'
     | '/incentives'
     | '/memberships'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AttendanceRoute: typeof AttendanceRoute
+  AuthRoute: typeof AuthRoute
   ClientsRoute: typeof ClientsRouteWithChildren
   IncentivesRoute: typeof IncentivesRoute
   MembershipsRoute: typeof MembershipsRoute
@@ -170,6 +183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/attendance': {
       id: '/attendance'
       path: '/attendance'
@@ -208,6 +228,7 @@ const ClientsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AttendanceRoute: AttendanceRoute,
+  AuthRoute: AuthRoute,
   ClientsRoute: ClientsRouteWithChildren,
   IncentivesRoute: IncentivesRoute,
   MembershipsRoute: MembershipsRoute,
