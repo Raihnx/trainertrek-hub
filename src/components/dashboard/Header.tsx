@@ -29,7 +29,7 @@ export function Header() {
           className="h-8 w-8 rounded-md object-cover ring-1 ring-primary/40"
         />
         <div className="hidden leading-tight md:block">
-          <div className="text-sm font-semibold">Alex Morgan</div>
+          <div className="text-sm font-semibold">Raihan Morgan</div>
           <div className="text-[11px] text-muted-foreground">Senior PT · Lvl 4</div>
         </div>
       </div>
