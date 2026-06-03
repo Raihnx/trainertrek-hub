@@ -14,8 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          client_id: string
+          created_at: string
+          date: string
+          id: string
+          status: string
+          trainer_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          date: string
+          id?: string
+          status: string
+          trainer_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          status?: string
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          eligible_days: number
+          expiry_date: string
+          freeze_days: number
+          id: string
+          joining_date: string
+          name: string
+          package_amount: number
+          package_id: string | null
+          package_name: string | null
+          phone: string | null
+          photo_url: string | null
+          total_days: number
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          eligible_days?: number
+          expiry_date: string
+          freeze_days?: number
+          id?: string
+          joining_date?: string
+          name: string
+          package_amount?: number
+          package_id?: string | null
+          package_name?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          total_days?: number
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          eligible_days?: number
+          expiry_date?: string
+          freeze_days?: number
+          id?: string
+          joining_date?: string
+          name?: string
+          package_amount?: number
+          package_id?: string | null
+          package_name?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          total_days?: number
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          trainer_id: string
+          type: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          trainer_id: string
+          type: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          trainer_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          created_at: string
+          duration_days: number
+          id: string
+          name: string
+          price: number
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_days: number
+          id?: string
+          name: string
+          price?: number
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          name?: string
+          price?: number
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string
+          trainer_id: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string
+          trainer_id: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           certifications: string | null
           created_at: string
@@ -23,10 +233,12 @@ export type Database = {
           email: string | null
           id: string
           level: string | null
+          phone: string | null
           specialization: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           certifications?: string | null
           created_at?: string
@@ -34,10 +246,12 @@ export type Database = {
           email?: string | null
           id: string
           level?: string | null
+          phone?: string | null
           specialization?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           certifications?: string | null
           created_at?: string
@@ -45,6 +259,7 @@ export type Database = {
           email?: string | null
           id?: string
           level?: string | null
+          phone?: string | null
           specialization?: string | null
           updated_at?: string
         }

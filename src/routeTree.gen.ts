@@ -9,16 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MembershipsRouteImport } from './routes/memberships'
 import { Route as IncentivesRouteImport } from './routes/incentives'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -37,6 +44,11 @@ const MembershipsRoute = MembershipsRouteImport.update({
 const IncentivesRoute = IncentivesRouteImport.update({
   id: '/incentives',
   path: '/incentives',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientsRoute = ClientsRouteImport.update({
@@ -70,10 +82,12 @@ export interface FileRoutesByFullPath {
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRoutesByTo {
@@ -81,10 +95,12 @@ export interface FileRoutesByTo {
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRoutesById {
@@ -93,10 +109,12 @@ export interface FileRoutesById {
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRouteTypes {
@@ -106,10 +124,12 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/auth'
     | '/clients'
+    | '/forgot-password'
     | '/incentives'
     | '/memberships'
     | '/profile'
     | '/reports'
+    | '/reset-password'
     | '/clients/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,10 +137,12 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/auth'
     | '/clients'
+    | '/forgot-password'
     | '/incentives'
     | '/memberships'
     | '/profile'
     | '/reports'
+    | '/reset-password'
     | '/clients/$id'
   id:
     | '__root__'
@@ -128,10 +150,12 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/auth'
     | '/clients'
+    | '/forgot-password'
     | '/incentives'
     | '/memberships'
     | '/profile'
     | '/reports'
+    | '/reset-password'
     | '/clients/$id'
   fileRoutesById: FileRoutesById
 }
@@ -140,14 +164,23 @@ export interface RootRouteChildren {
   AttendanceRoute: typeof AttendanceRoute
   AuthRoute: typeof AuthRoute
   ClientsRoute: typeof ClientsRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   IncentivesRoute: typeof IncentivesRoute
   MembershipsRoute: typeof MembershipsRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -174,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/incentives'
       fullPath: '/incentives'
       preLoaderRoute: typeof IncentivesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/clients': {
@@ -230,21 +270,13 @@ const rootRouteChildren: RootRouteChildren = {
   AttendanceRoute: AttendanceRoute,
   AuthRoute: AuthRoute,
   ClientsRoute: ClientsRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   IncentivesRoute: IncentivesRoute,
   MembershipsRoute: MembershipsRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

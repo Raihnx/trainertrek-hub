@@ -1,0 +1,111 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Plus, Loader2 } from "lucide-react";
+import { useAddClient } from "@/lib/queries";
+import { toast } from "sonner";
+import { eligibleDaysFor } from "@/lib/incentive";
+
+export function AddClientDialog() {
+  const [open, setOpen] = useState(false);
+  const add = useAddClient();
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    photo_url: "",
+    package_name: "",
+    package_amount: 0,
+    amount_paid: 0,
+    total_days: 30,
+    joining_date: new Date().toISOString().slice(0, 10),
+  });
+
+  const balance = form.package_amount - form.amount_paid;
+  const eligible = eligibleDaysFor(form.total_days, form.amount_paid, form.package_amount);
+
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.package_name) {
+      toast.error("Name and package are required");
+      return;
+    }
+    add.mutate(
+      { ...form, eligible_days: eligible },
+      {
+        onSuccess: () => {
+          toast.success("Client added");
+          setOpen(false);
+          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10) });
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+      }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button className="inline-flex h-10 items-center gap-2 rounded-lg bg-[image:var(--gradient-primary)] px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-glow)] hover:opacity-95">
+          <Plus className="h-4 w-4" /> Add client
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New client</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <Label>Name *</Label>
+              <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+            </div>
+            <div>
+              <Label>Joining date</Label>
+              <Input type="date" value={form.joining_date} onChange={(e) => set("joining_date", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <Label>Package *</Label>
+              <Input placeholder="e.g. Elite — 6 months" value={form.package_name} onChange={(e) => set("package_name", e.target.value)} required />
+            </div>
+            <div>
+              <Label>Total payment (₹)</Label>
+              <Input type="number" min={0} value={form.package_amount} onChange={(e) => set("package_amount", Number(e.target.value))} />
+            </div>
+            <div>
+              <Label>Paid amount (₹)</Label>
+              <Input type="number" min={0} value={form.amount_paid} onChange={(e) => set("amount_paid", Number(e.target.value))} />
+            </div>
+            <div>
+              <Label>Total days</Label>
+              <Input type="number" min={1} value={form.total_days} onChange={(e) => set("total_days", Number(e.target.value))} />
+            </div>
+            <div>
+              <Label>Eligible days</Label>
+              <Input value={eligible} readOnly className="bg-muted/30" />
+            </div>
+            <div className="col-span-2">
+              <Label>Photo URL (optional)</Label>
+              <Input placeholder="https://…" value={form.photo_url} onChange={(e) => set("photo_url", e.target.value)} />
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+            Balance: <span className={`font-semibold ${balance > 0 ? "text-warning" : "text-success"}`}>₹{balance.toLocaleString("en-IN")}</span>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={add.isPending}>
+              {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add client
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -107,7 +107,7 @@ function AuthGate() {
   }, [router]);
 
   const path = typeof window !== "undefined" ? window.location.pathname : "/";
-  const isAuthRoute = path.startsWith("/auth");
+  const isAuthRoute = path.startsWith("/auth") || path.startsWith("/forgot-password") || path.startsWith("/reset-password");
 
   if (!ready) {
     return (
