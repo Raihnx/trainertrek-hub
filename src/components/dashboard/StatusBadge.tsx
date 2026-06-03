@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import type { ClientStatus } from "@/lib/mock-data";
+
+export type ClientStatus = "active" | "expiring" | "expired";
 
 const map: Record<ClientStatus, { label: string; cls: string }> = {
   active:   { label: "Active",         cls: "bg-success/10 text-success border-success/30" },
