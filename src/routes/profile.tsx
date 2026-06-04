@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { uploadAvatar } from "@/lib/upload";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — ForgeFit" }, { name: "description", content: "Trainer profile and credentials." }] }),
