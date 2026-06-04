@@ -116,8 +116,26 @@ function ProfilePage() {
               <Textarea rows={3} value={form.certifications} onChange={(e) => setForm({ ...form, certifications: e.target.value })} />
             </div>
             <div className="md:col-span-2">
-              <Label>Photo URL (optional)</Label>
-              <Input value={form.avatar_url} onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} placeholder="https://…" />
+              <Label>Photo</Label>
+              <div className="flex items-center gap-3">
+                <Input value={form.avatar_url} onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} placeholder="https://… or upload" />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="max-w-[220px]"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    try {
+                      const url = await uploadAvatar(f, "profile");
+                      setForm((s) => ({ ...s, avatar_url: url }));
+                      toast.success("Photo uploaded");
+                    } catch (err: any) {
+                      toast.error(err.message ?? "Upload failed");
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
           <div className="flex justify-end">
