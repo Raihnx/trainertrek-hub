@@ -7,6 +7,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { useAddClient } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
+import { uploadAvatar } from "@/lib/upload";
 
 export function AddClientDialog() {
   const [open, setOpen] = useState(false);
