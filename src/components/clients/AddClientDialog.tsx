@@ -93,8 +93,26 @@ export function AddClientDialog() {
               <Input value={eligible} readOnly className="bg-muted/30" />
             </div>
             <div className="col-span-2">
-              <Label>Photo URL (optional)</Label>
-              <Input placeholder="https://…" value={form.photo_url} onChange={(e) => set("photo_url", e.target.value)} />
+              <Label>Photo</Label>
+              <div className="flex items-center gap-2">
+                <Input placeholder="https://… or upload" value={form.photo_url} onChange={(e) => set("photo_url", e.target.value)} />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="max-w-[180px]"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    try {
+                      const url = await uploadAvatar(f, "clients");
+                      set("photo_url", url);
+                      toast.success("Photo uploaded");
+                    } catch (err: any) {
+                      toast.error(err.message ?? "Upload failed");
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
           <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
