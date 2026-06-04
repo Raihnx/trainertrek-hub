@@ -24,6 +24,7 @@ export const Route = createFileRoute("/clients/$id")({
 });
 
 function ClientDetail() {
+  console.log("CLIENT DETAIL PAGE LOADED");
   const { id } = Route.useParams();
   const { data: c, isLoading } = useClient(id);
   const month = currentMonthISO();

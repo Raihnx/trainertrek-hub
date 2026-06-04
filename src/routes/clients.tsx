@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Search, Filter } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ClientsTable } from "@/components/dashboard/ClientsTable";
@@ -61,17 +61,25 @@ function ClientsPage() {
   );
 
   return (
+  <>
+    <Outlet />
+
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">My Clients</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">
+            My Clients
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {clients.length} total · {clients.filter((c) => c.status === "active").length} active
+            {clients.length} total ·{" "}
+            {clients.filter((c) => c.status === "active").length} active
           </p>
         </div>
+
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
             <input
               value={search}
               onChange={(e) => appStore.setSearch(e.target.value)}
@@ -79,6 +87,7 @@ function ClientsPage() {
               className="h-10 w-64 rounded-lg border border-border bg-muted/30 pl-9 pr-3 text-sm outline-none focus:border-primary/50"
             />
           </div>
+
           <AddClientDialog />
         </div>
       </div>
@@ -86,12 +95,14 @@ function ClientsPage() {
       <div className="glass space-y-4 rounded-2xl p-5">
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
+
           {chip("all", "All")}
           {chip("active", "Active")}
           {chip("expiring", "Expiring soon")}
           {chip("expired", "Expired")}
           {chip("partial", "Partial paid")}
           {chip("fully_paid", "Fully paid")}
+
           {packages.length > 0 && (
             <select
               value={pkgFilter}
@@ -99,17 +110,28 @@ function ClientsPage() {
               className="ml-auto rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs font-medium"
             >
               <option value="all">All packages</option>
-              {packages.map((p) => <option key={p} value={p}>{p}</option>)}
+
+              {packages.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
             </select>
           )}
         </div>
 
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">Loading clients…</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            Loading clients…
+          </div>
         ) : (
-          <ClientsTable clients={filtered} attendancePct={attendancePct} />
+          <ClientsTable
+            clients={filtered}
+            attendancePct={attendancePct}
+          />
         )}
       </div>
     </div>
-  );
+  </>
+);
 }
