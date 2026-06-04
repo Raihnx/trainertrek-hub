@@ -78,7 +78,8 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           // Supabase returns a generic invalid_credentials for security (prevents email enumeration).
-          toast.error("Invalid email or password.");
+          setAlertMessage("The email or password you entered is incorrect. Please try again.");
+          setAlertOpen(true);
           return;
         }
       }
