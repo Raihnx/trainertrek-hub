@@ -151,20 +151,43 @@ export function useAttendance(monthISO: string, clientId?: string) {
 export function useMarkAttendance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze" }) => {
+    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze"; date?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
-      const today = new Date().toISOString().slice(0, 10);
-      // Upsert on (client_id, date)
+      const date = input.date ?? new Date().toISOString().slice(0, 10);
       const { error } = await supabase.from("attendance").upsert(
-        { trainer_id: user.id, client_id: input.client_id, date: today, status: input.status },
+        { trainer_id: user.id, client_id: input.client_id, date, status: input.status },
         { onConflict: "client_id,date" }
       );
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["attendance"] });
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+  });
+}
+
+export function useFreezeRange() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { client_id: string; startDate: string; days: number }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      if (input.days <= 0) throw new Error("Days must be > 0");
+      const rows: { trainer_id: string; client_id: string; date: string; status: "freeze" }[] = [];
+      const start = new Date(input.startDate);
+      for (let i = 0; i < input.days; i++) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i);
+        rows.push({
+          trainer_id: user.id,
+          client_id: input.client_id,
+          date: d.toISOString().slice(0, 10),
+          status: "freeze",
+        });
+      }
+      const { error } = await supabase.from("attendance").upsert(rows, { onConflict: "client_id,date" });
+      if (error) throw error;
     },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
 }
 
