@@ -50,7 +50,8 @@ function StaffPage() {
   const handleRole = async (id: string, role: AppRole) => {
     setPending(id);
     try {
-      await setRole.mutateAsync({ userId: id, role });
+      const member = staff.find((s) => s.id === id);
+      await setRole.mutateAsync({ userId: id, role, label: member?.display_name ?? member?.email ?? undefined });
       toast.success("Role updated");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to update role");
@@ -60,7 +61,8 @@ function StaffPage() {
   const handleStatus = async (id: string, status: "active" | "inactive") => {
     setPending(id);
     try {
-      await setStatus.mutateAsync({ id, status });
+      const member = staff.find((s) => s.id === id);
+      await setStatus.mutateAsync({ id, status, label: member?.display_name ?? member?.email ?? undefined });
       toast.success(status === "active" ? "Account enabled" : "Account disabled");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");

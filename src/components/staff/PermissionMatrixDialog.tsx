@@ -57,6 +57,7 @@ export function PermissionMatrixDialog({ open, onOpenChange, userId, userName, r
         userId,
         key,
         granted: next === roleDefault ? null : next,
+        userLabel: userName,
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to update permission");
@@ -66,7 +67,7 @@ export function PermissionMatrixDialog({ open, onOpenChange, userId, userName, r
   const resetOne = async (key: string) => {
     if (!userId) return;
     try {
-      await setPerm.mutateAsync({ userId, key, granted: null });
+      await setPerm.mutateAsync({ userId, key, granted: null, userLabel: userName });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
     }
