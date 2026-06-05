@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Dumbbell, Loader2, Check, X } from "lucide-react";
+import { Dumbbell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -21,20 +21,11 @@ export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ForgeFit" }] }),
 });
 
-const rules = [
-  { test: (s: string) => s.length >= 8,         label: "At least 8 characters" },
-  { test: (s: string) => /[A-Z]/.test(s),       label: "One uppercase letter" },
-  { test: (s: string) => /[a-z]/.test(s),       label: "One lowercase letter" },
-  { test: (s: string) => /[0-9]/.test(s),       label: "One number" },
-  { test: (s: string) => /[^A-Za-z0-9]/.test(s),label: "One special character" },
-];
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -45,43 +36,15 @@ function AuthPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  const passwordValid = mode === "signin" || rules.every((r) => r.test(password));
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === "signup" && !passwordValid) {
-      toast.error("Password doesn't meet all requirements");
-      return;
-    }
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { display_name: name || email.split("@")[0] },
-          },
-        });
-        if (error) {
-          const msg = error.message.toLowerCase();
-          if (msg.includes("registered") || msg.includes("already")) {
-            toast.error("This email is already registered.");
-          } else {
-            toast.error(error.message);
-          }
-          return;
-        }
-        toast.success("Account created. Check your email to confirm.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          // Supabase returns a generic invalid_credentials for security (prevents email enumeration).
-          setAlertMessage("The email or password you entered is incorrect. Please try again.");
-          setAlertOpen(true);
-          return;
-        }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAlertMessage("The email or password you entered is incorrect. Please try again.");
+        setAlertOpen(true);
+        return;
       }
     } finally {
       setLoading(false);
@@ -121,9 +84,9 @@ function AuthPage() {
         </div>
 
         <div className="glass w-full rounded-2xl border border-border/60 p-7 shadow-2xl">
-          <h1 className="text-xl font-semibold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+          <h1 className="text-xl font-semibold">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Sign in to manage your clients and sessions." : "Start tracking clients, attendance, and incentives."}
+            Sign in to manage your clients and sessions.
           </p>
 
           <Button type="button" variant="outline" onClick={handleGoogle} disabled={loading} className="mt-6 w-full">
@@ -138,9 +101,6 @@ function AuthPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {mode === "signup" && (
-              <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
-            )}
             <Input type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input
               type="password"
@@ -150,41 +110,21 @@ function AuthPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            {mode === "signup" && (
-              <ul className="space-y-1 rounded-lg border border-border bg-muted/20 px-3 py-2">
-                {rules.map((r) => {
-                  const ok = r.test(password);
-                  return (
-                    <li key={r.label} className={`flex items-center gap-2 text-xs ${ok ? "text-success" : "text-muted-foreground"}`}>
-                      {ok ? <Check className="h-3.5 w-3.5 text-success" /> : <X className="h-3.5 w-3.5 text-destructive" />}
-                      {r.label}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-
             <Button type="submit" disabled={loading} className="w-full">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              Sign in
             </Button>
 
-            {mode === "signin" && (
-              <div className="text-center">
-                <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
-                  Forgot password?
-                </Link>
-              </div>
-            )}
+            <div className="text-center">
+              <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+                Forgot password?
+              </Link>
+            </div>
           </form>
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-5 w-full text-center text-sm text-muted-foreground hover:text-foreground"
-          >
-            {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-          </button>
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            New accounts are created by your admin. Contact them if you need access.
+          </p>
         </div>
       </div>
 

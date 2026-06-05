@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound } from "lucide-react";
+import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus } from "lucide-react";
 import { useIsAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/app-store";
 import { toast } from "sonner";
 import type { AppRole } from "@/lib/useRole";
 import { PermissionMatrixDialog } from "@/components/staff/PermissionMatrixDialog";
+import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
 
 
 export const Route = createFileRoute("/staff")({
@@ -27,6 +28,7 @@ function StaffPage() {
 
   const [pending, setPending] = useState<string | null>(null);
   const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
 
   if (roleLoading) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -78,7 +80,7 @@ function StaffPage() {
         </div>
       </div>
       {list.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">No {title.toLowerCase()} yet. Invite people by asking them to sign up — they'll appear here, then assign them a role.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">No {title.toLowerCase()} yet. Use "Add staff" to create an account for them.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -160,10 +162,15 @@ function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Organization</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
-        <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Organization</p>
+          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
+          <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
+        </div>
+        <Button onClick={() => setAddOpen(true)} className="shrink-0">
+          <UserPlus className="mr-2 h-4 w-4" /> Add staff
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -182,6 +189,8 @@ function StaffPage() {
           <Section title="Admins" list={admins} />
         </>
       )}
+
+      <AddStaffDialog open={addOpen} onOpenChange={setAddOpen} />
 
       <PermissionMatrixDialog
         open={!!permTarget}
