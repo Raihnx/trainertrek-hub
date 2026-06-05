@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
+import { useUnreadCount } from "@/lib/notifications";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 
@@ -12,6 +13,7 @@ const trainerItems: NavItem[] = [
   { to: "/memberships", label: "Memberships", icon: BadgeCheck },
   { to: "/incentives", label: "Incentives", icon: Trophy },
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
+  { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
@@ -32,6 +34,7 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isAdmin } = useIsAdmin();
   const { data: role } = useUserRole();
+  const unread = useUnreadCount();
 
   const base = role === "receptionist" ? receptionistItems : trainerItems;
   const items = isAdmin ? [...trainerItems, ...adminExtras] : base;
@@ -69,7 +72,12 @@ export function Sidebar() {
                 <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-[image:var(--gradient-primary)]" />
               )}
               <Icon className={cn("h-[18px] w-[18px] transition-colors", active && "text-primary")} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.to === "/notifications" && unread > 0 && (
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
             </Link>
           );
         })}
