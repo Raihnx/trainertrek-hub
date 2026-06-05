@@ -82,7 +82,7 @@ function Dashboard() {
     <div className="space-y-6">
       {/* Greeting */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Welcome back</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{isAdmin ? "Admin dashboard" : "Trainer dashboard"}</p>
         <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
           {greeting}, <span className="text-gradient-gold">{firstName}</span>
         </h1>

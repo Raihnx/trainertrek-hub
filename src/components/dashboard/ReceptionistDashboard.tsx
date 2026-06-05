@@ -45,7 +45,7 @@ export function ReceptionistDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Front desk</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Receptionist dashboard</p>
         <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">
           {greeting}, <span className="text-gradient-gold">{firstName}</span>
         </h1>
