@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MembershipsRouteImport } from './routes/memberships'
 import { Route as IncentivesRouteImport } from './routes/incentives'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -41,6 +43,11 @@ const ReportsRoute = ReportsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MembershipsRoute = MembershipsRouteImport.update({
@@ -98,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/incentives': typeof IncentivesRoute
   '/memberships': typeof MembershipsRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/incentives'
     | '/memberships'
+    | '/notifications'
     | '/profile'
     | '/reports'
     | '/reset-password'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/incentives'
     | '/memberships'
+    | '/notifications'
     | '/profile'
     | '/reports'
     | '/reset-password'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/incentives'
     | '/memberships'
+    | '/notifications'
     | '/profile'
     | '/reports'
     | '/reset-password'
@@ -192,6 +205,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   IncentivesRoute: typeof IncentivesRoute
   MembershipsRoute: typeof MembershipsRoute
+  NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -226,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/memberships': {
@@ -314,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   IncentivesRoute: IncentivesRoute,
   MembershipsRoute: MembershipsRoute,
+  NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
