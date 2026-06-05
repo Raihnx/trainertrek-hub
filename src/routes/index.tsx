@@ -197,3 +197,15 @@ function Dashboard() {
     </div>
   );
 }
+
+function OrgKpi({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-muted/20 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3 w-3 text-primary" /> {label}
+      </div>
+      <div className="mt-1 font-display text-lg font-semibold">{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}
