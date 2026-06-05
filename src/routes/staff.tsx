@@ -190,6 +190,8 @@ function StaffPage() {
         </>
       )}
 
+      <AddStaffDialog open={addOpen} onOpenChange={setAddOpen} />
+
       <PermissionMatrixDialog
         open={!!permTarget}
         onOpenChange={(o) => { if (!o) setPermTarget(null); }}
