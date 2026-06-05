@@ -10,8 +10,9 @@ import { useProfile } from "@/lib/queries";
 import { useAppStore } from "@/lib/app-store";
 import { monthRange } from "@/lib/incentive";
 import { useMemo } from "react";
-import { useIsAdmin } from "@/lib/useRole";
+import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useAdminOrgMetrics } from "@/lib/admin-queries";
+import { ReceptionistDashboard } from "@/components/dashboard/ReceptionistDashboard";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,7 @@ const spark = (seed: number) =>
 function Dashboard() {
   const month = useAppStore((s) => s.month);
   const search = useAppStore((s) => s.search);
+  const { data: role } = useUserRole();
   const stats = useDashboardStats(month);
   const inc = useIncentives(month);
   const { data: profile } = useProfile();
@@ -36,6 +38,8 @@ function Dashboard() {
   const { isAdmin } = useIsAdmin();
   const { data: org } = useAdminOrgMetrics(month);
   const monthLabel = monthRange(month).label;
+
+  if (role === "receptionist") return <ReceptionistDashboard />;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
