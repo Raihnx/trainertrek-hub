@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet } from "lucide-react";
+import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound } from "lucide-react";
 import { useIsAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/app-store";
 import { toast } from "sonner";
 import type { AppRole } from "@/lib/useRole";
+import { PermissionMatrixDialog } from "@/components/staff/PermissionMatrixDialog";
+
 
 export const Route = createFileRoute("/staff")({
   head: () => ({ meta: [{ title: "Staff — ForgeFit" }, { name: "description", content: "Manage trainers and receptionists." }] }),
@@ -22,7 +24,10 @@ function StaffPage() {
   const { data: org } = useAdminOrgMetrics(month);
   const setStatus = useSetStaffStatus();
   const setRole = useSetStaffRole();
+
   const [pending, setPending] = useState<string | null>(null);
+  const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
+
 
   if (roleLoading) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!isAdmin) {
@@ -119,18 +124,28 @@ function StaffPage() {
                       </Select>
                     </td>
                     <td className="py-3 text-right">
-                      {pending === s.id ? (
-                        <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />
-                      ) : s.status === "active" ? (
-                        <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "inactive")}>
-                          <UserX className="mr-1.5 h-3.5 w-3.5" /> Disable
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setPermTarget({ id: s.id, name: s.display_name ?? s.email ?? "Staff", role: s.role })}
+                        >
+                          <KeyRound className="mr-1.5 h-3.5 w-3.5" /> Permissions
                         </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "active")}>
-                          <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Enable
-                        </Button>
-                      )}
+                        {pending === s.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : s.status === "active" ? (
+                          <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "inactive")}>
+                            <UserX className="mr-1.5 h-3.5 w-3.5" /> Disable
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "active")}>
+                            <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Enable
+                          </Button>
+                        )}
+                      </div>
                     </td>
+
                   </tr>
                 );
               })}
@@ -165,9 +180,18 @@ function StaffPage() {
           <Section title="Admins" list={admins} />
         </>
       )}
+
+      <PermissionMatrixDialog
+        open={!!permTarget}
+        onOpenChange={(o) => { if (!o) setPermTarget(null); }}
+        userId={permTarget?.id ?? null}
+        userName={permTarget?.name ?? ""}
+        role={permTarget?.role ?? "trainer"}
+      />
     </div>
   );
 }
+
 
 function Kpi({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
