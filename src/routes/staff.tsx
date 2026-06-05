@@ -23,6 +23,8 @@ function StaffPage() {
   const { data: staff = [], isLoading } = useStaff();
   const { data: org } = useAdminOrgMetrics(month);
   const setStatus = useSetStaffStatus();
+  const setRole = useSetStaffRole();
+
   const [pending, setPending] = useState<string | null>(null);
   const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
 
