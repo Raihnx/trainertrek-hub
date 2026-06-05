@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { monthRange, incentiveFor, clientStatus } from "./incentive";
 import type { AppRole } from "./useRole";
+import { logAudit } from "./audit";
 
 export type StaffMember = {
   id: string;
@@ -50,9 +51,16 @@ export function useStaff() {
 export function useSetStaffStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "active" | "inactive" }) => {
+    mutationFn: async ({ id, status, label }: { id: string; status: "active" | "inactive"; label?: string }) => {
       const { error } = await supabase.from("profiles").update({ status } as any).eq("id", id);
       if (error) throw error;
+      await logAudit({
+        action: "staff.status_change",
+        target_type: "user",
+        target_id: id,
+        target_label: label,
+        metadata: { status },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["staff"] }),
   });
@@ -61,12 +69,18 @@ export function useSetStaffStatus() {
 export function useSetStaffRole() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      // Replace all roles for this user with the new single role.
+    mutationFn: async ({ userId, role, label }: { userId: string; role: AppRole; label?: string }) => {
       const del = await (supabase as any).from("user_roles").delete().eq("user_id", userId);
       if (del.error) throw del.error;
       const ins = await (supabase as any).from("user_roles").insert({ user_id: userId, role });
       if (ins.error) throw ins.error;
+      await logAudit({
+        action: "staff.role_change",
+        target_type: "user",
+        target_id: userId,
+        target_label: label,
+        metadata: { role },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["staff"] });

@@ -80,7 +80,9 @@ export function useSetUserPermission() {
       key: string;
       // null = clear override (fall back to role default)
       granted: boolean | null;
+      userLabel?: string;
     }) => {
+      const { logAudit } = await import("./audit");
       if (input.granted === null) {
         const { error } = await (supabase as any)
           .from("user_permissions")
@@ -88,6 +90,13 @@ export function useSetUserPermission() {
           .eq("user_id", input.userId)
           .eq("permission_key", input.key);
         if (error) throw error;
+        await logAudit({
+          action: "staff.permission_reset",
+          target_type: "user",
+          target_id: input.userId,
+          target_label: input.userLabel,
+          metadata: { permission: input.key },
+        });
         return;
       }
       const { error } = await (supabase as any)
@@ -97,6 +106,13 @@ export function useSetUserPermission() {
           { onConflict: "user_id,permission_key" },
         );
       if (error) throw error;
+      await logAudit({
+        action: "staff.permission_set",
+        target_type: "user",
+        target_id: input.userId,
+        target_label: input.userLabel,
+        metadata: { permission: input.key, granted: input.granted },
+      });
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["user-permissions", v.userId] });
