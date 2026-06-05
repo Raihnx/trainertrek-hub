@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
+import { useUnreadCount } from "@/lib/notifications";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 
@@ -12,6 +13,7 @@ const trainerItems: NavItem[] = [
   { to: "/memberships", label: "Memberships", icon: BadgeCheck },
   { to: "/incentives", label: "Incentives", icon: Trophy },
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
+  { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
