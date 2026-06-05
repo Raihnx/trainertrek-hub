@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound } from "lucide-react";
+import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus } from "lucide-react";
 import { useIsAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/app-store";
 import { toast } from "sonner";
 import type { AppRole } from "@/lib/useRole";
 import { PermissionMatrixDialog } from "@/components/staff/PermissionMatrixDialog";
+import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
 
 
 export const Route = createFileRoute("/staff")({
