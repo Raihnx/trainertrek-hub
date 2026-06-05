@@ -34,6 +34,11 @@ export function Header() {
   const search = useAppStore((s) => s.search);
   const month = useAppStore((s) => s.month);
   const notifs = useLiveNotifications();
+  const { data: persisted = [] } = useNotifications();
+  const markRead = useMarkRead();
+  const markAll = useMarkAllRead();
+  const unreadPersisted = persisted.filter((n) => !n.read);
+  const badgeCount = notifs.length + unreadPersisted.length;
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
