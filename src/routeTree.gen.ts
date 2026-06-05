@@ -18,6 +18,7 @@ import { Route as IncentivesRouteImport } from './routes/incentives'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
@@ -67,6 +68,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AttendanceRoute = AttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
@@ -86,6 +92,7 @@ const ClientsIdRoute = ClientsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/clients': typeof ClientsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/attendance'
+    | '/audit'
     | '/auth'
     | '/clients'
     | '/forgot-password'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/attendance'
+    | '/audit'
     | '/auth'
     | '/clients'
     | '/forgot-password'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/attendance'
+    | '/audit'
     | '/auth'
     | '/clients'
     | '/forgot-password'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AttendanceRoute: typeof AttendanceRoute
+  AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   ClientsRoute: typeof ClientsRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/attendance': {
       id: '/attendance'
       path: '/attendance'
@@ -288,6 +308,7 @@ const ClientsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AttendanceRoute: AttendanceRoute,
+  AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   ClientsRoute: ClientsRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
