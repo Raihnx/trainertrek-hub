@@ -28,6 +28,7 @@ function StaffPage() {
 
   const [pending, setPending] = useState<string | null>(null);
   const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
 
   if (roleLoading) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
