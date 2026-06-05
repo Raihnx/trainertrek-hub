@@ -80,7 +80,7 @@ function StaffPage() {
         </div>
       </div>
       {list.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">No {title.toLowerCase()} yet. Invite people by asking them to sign up — they'll appear here, then assign them a role.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">No {title.toLowerCase()} yet. Use "Add staff" to create an account for them.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
