@@ -31,10 +31,8 @@ const rules = [
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -45,43 +43,15 @@ function AuthPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  const passwordValid = mode === "signin" || rules.every((r) => r.test(password));
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === "signup" && !passwordValid) {
-      toast.error("Password doesn't meet all requirements");
-      return;
-    }
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { display_name: name || email.split("@")[0] },
-          },
-        });
-        if (error) {
-          const msg = error.message.toLowerCase();
-          if (msg.includes("registered") || msg.includes("already")) {
-            toast.error("This email is already registered.");
-          } else {
-            toast.error(error.message);
-          }
-          return;
-        }
-        toast.success("Account created. Check your email to confirm.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          // Supabase returns a generic invalid_credentials for security (prevents email enumeration).
-          setAlertMessage("The email or password you entered is incorrect. Please try again.");
-          setAlertOpen(true);
-          return;
-        }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAlertMessage("The email or password you entered is incorrect. Please try again.");
+        setAlertOpen(true);
+        return;
       }
     } finally {
       setLoading(false);
