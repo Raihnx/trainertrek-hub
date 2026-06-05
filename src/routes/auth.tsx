@@ -21,13 +21,6 @@ export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ForgeFit" }] }),
 });
 
-const rules = [
-  { test: (s: string) => s.length >= 8,         label: "At least 8 characters" },
-  { test: (s: string) => /[A-Z]/.test(s),       label: "One uppercase letter" },
-  { test: (s: string) => /[a-z]/.test(s),       label: "One lowercase letter" },
-  { test: (s: string) => /[0-9]/.test(s),       label: "One number" },
-  { test: (s: string) => /[^A-Za-z0-9]/.test(s),label: "One special character" },
-];
 
 function AuthPage() {
   const navigate = useNavigate();
