@@ -162,10 +162,15 @@ function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Organization</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
-        <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Organization</p>
+          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
+          <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
+        </div>
+        <Button onClick={() => setAddOpen(true)} className="shrink-0">
+          <UserPlus className="mr-2 h-4 w-4" /> Add staff
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
