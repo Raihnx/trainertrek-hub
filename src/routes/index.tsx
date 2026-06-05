@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, UserCheck, CalendarDays, Trophy, AlertCircle, Wallet } from "lucide-react";
+import { Users, UserCheck, CalendarDays, Trophy, AlertCircle, Wallet, Shield, TrendingUp, Building2 } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -10,6 +10,8 @@ import { useProfile } from "@/lib/queries";
 import { useAppStore } from "@/lib/app-store";
 import { monthRange } from "@/lib/incentive";
 import { useMemo } from "react";
+import { useIsAdmin } from "@/lib/useRole";
+import { useAdminOrgMetrics } from "@/lib/admin-queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +33,8 @@ function Dashboard() {
   const inc = useIncentives(month);
   const { data: profile } = useProfile();
   const { data: clients = [] } = useClients();
+  const { isAdmin } = useIsAdmin();
+  const { data: org } = useAdminOrgMetrics(month);
   const monthLabel = monthRange(month).label;
 
   const filtered = useMemo(() => {
