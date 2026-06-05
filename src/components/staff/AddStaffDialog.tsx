@@ -29,7 +29,7 @@ export function AddStaffDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     mutationFn: async () => fn({ data: { email: email.trim(), password, displayName: displayName.trim(), role } }),
     onSuccess: async (res) => {
       toast.success(`${displayName} added as ${role}`);
-      await logAudit({ action: "staff.create", targetId: res.userId, targetLabel: displayName, metadata: { email, role } });
+      await logAudit({ action: "staff.create", target_id: res.userId, target_label: displayName, metadata: { email, role } });
       qc.invalidateQueries({ queryKey: ["staff"] });
       qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
       reset();
