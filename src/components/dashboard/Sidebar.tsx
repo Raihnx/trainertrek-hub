@@ -34,6 +34,7 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isAdmin } = useIsAdmin();
   const { data: role } = useUserRole();
+  const unread = useUnreadCount();
 
   const base = role === "receptionist" ? receptionistItems : trainerItems;
   const items = isAdmin ? [...trainerItems, ...adminExtras] : base;
