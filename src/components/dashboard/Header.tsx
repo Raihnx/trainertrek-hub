@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useProfile, useLiveNotifications } from "@/lib/queries";
+import { useNotifications, useMarkRead, useMarkAllRead } from "@/lib/notifications";
 import { useAppStore, appStore } from "@/lib/app-store";
 import { monthRange } from "@/lib/incentive";
 
