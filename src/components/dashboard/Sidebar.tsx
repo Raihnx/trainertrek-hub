@@ -3,7 +3,8 @@ import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart
 import { cn } from "@/lib/utils";
 import { useIsAdmin } from "@/lib/useRole";
 
-const baseItems = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const baseItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/clients", label: "My Clients", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
@@ -12,7 +13,7 @@ const baseItems = [
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
   { to: "/profile", label: "Profile", icon: User },
 ];
-const adminItem = { to: "/staff", label: "Staff", icon: Shield };
+const adminItem: NavItem = { to: "/staff", label: "Staff", icon: Shield };
 
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
