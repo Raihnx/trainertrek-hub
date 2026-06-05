@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsAdmin } from "@/lib/useRole";
+import { useIsAdmin, useUserRole } from "@/lib/useRole";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
-const baseItems: NavItem[] = [
+
+const trainerItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/clients", label: "My Clients", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
@@ -13,12 +14,24 @@ const baseItems: NavItem[] = [
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
   { to: "/profile", label: "Profile", icon: User },
 ];
-const adminItem: NavItem = { to: "/staff", label: "Staff", icon: Shield };
+
+const receptionistItems: NavItem[] = [
+  { to: "/", label: "Front desk", icon: LayoutDashboard, exact: true },
+  { to: "/clients", label: "Members", icon: Users },
+  { to: "/memberships", label: "Memberships", icon: BadgeCheck },
+  { to: "/attendance", label: "Attendance", icon: CalendarCheck },
+  { to: "/profile", label: "Profile", icon: User },
+];
+
+const adminExtra: NavItem = { to: "/staff", label: "Staff", icon: Shield };
 
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isAdmin } = useIsAdmin();
-  const items = isAdmin ? [...baseItems, adminItem] : baseItems;
+  const { data: role } = useUserRole();
+
+  const base = role === "receptionist" ? receptionistItems : trainerItems;
+  const items = isAdmin ? [...trainerItems, adminExtra] : base;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
@@ -28,7 +41,9 @@ export function Sidebar() {
         </div>
         <div className="leading-tight">
           <div className="font-display text-base font-semibold tracking-tight">FORGE<span className="text-gradient-gold">FIT</span></div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Trainer OS</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {role === "receptionist" ? "Reception" : isAdmin ? "Admin" : "Trainer OS"}
+          </div>
         </div>
       </div>
 
@@ -57,15 +72,17 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="m-3 rounded-xl border border-sidebar-border bg-[image:var(--gradient-surface)] p-4">
-        <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-          <Trophy className="h-4 w-4" />
-          Top performer
+      {role !== "receptionist" && (
+        <div className="m-3 rounded-xl border border-sidebar-border bg-[image:var(--gradient-surface)] p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+            <Trophy className="h-4 w-4" />
+            Top performer
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            You're in the top 5% of trainers this month. Keep it up!
+          </p>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          You're in the top 5% of trainers this month. Keep it up!
-        </p>
-      </div>
+      )}
     </aside>
   );
 }
