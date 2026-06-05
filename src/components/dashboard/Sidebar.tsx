@@ -1,8 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsAdmin } from "@/lib/useRole";
 
-const items = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const baseItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/clients", label: "My Clients", icon: Users },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
@@ -11,9 +13,12 @@ const items = [
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
   { to: "/profile", label: "Profile", icon: User },
 ];
+const adminItem: NavItem = { to: "/staff", label: "Staff", icon: Shield };
 
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isAdmin } = useIsAdmin();
+  const items = isAdmin ? [...baseItems, adminItem] : baseItems;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">

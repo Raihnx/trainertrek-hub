@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, UserCheck, CalendarDays, Trophy, AlertCircle, Wallet } from "lucide-react";
+import { Users, UserCheck, CalendarDays, Trophy, AlertCircle, Wallet, Shield, TrendingUp, Building2 } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -10,6 +10,8 @@ import { useProfile } from "@/lib/queries";
 import { useAppStore } from "@/lib/app-store";
 import { monthRange } from "@/lib/incentive";
 import { useMemo } from "react";
+import { useIsAdmin } from "@/lib/useRole";
+import { useAdminOrgMetrics } from "@/lib/admin-queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +33,8 @@ function Dashboard() {
   const inc = useIncentives(month);
   const { data: profile } = useProfile();
   const { data: clients = [] } = useClients();
+  const { isAdmin } = useIsAdmin();
+  const { data: org } = useAdminOrgMetrics(month);
   const monthLabel = monthRange(month).label;
 
   const filtered = useMemo(() => {
@@ -93,6 +97,52 @@ function Dashboard() {
         <StatCard label="Pending Payments"     value={`₹${(stats.pendingPayments / 1000).toFixed(1)}k`} icon={Wallet}  trend={0} data={spark(6)} accent="red" />
       </div>
 
+      {/* Admin-only organization overview */}
+      {isAdmin && org && (
+        <div className="glass rounded-2xl p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <h2 className="font-display text-lg font-semibold">Organization overview</h2>
+            <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">Admin</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            <OrgKpi icon={Building2} label="Total clients" value={String(org.totalClients)} />
+            <OrgKpi icon={Wallet} label="Revenue (month)" value={`₹${org.revenueMonth.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={TrendingUp} label="Revenue today" value={`₹${org.revenueToday.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={AlertCircle} label="Outstanding" value={`₹${org.outstanding.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={Trophy} label="Incentive (month)" value={`₹${org.monthlyIncentiveAll.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={Users} label="Staff" value={`${org.totalTrainers + org.totalReceptionists}`} sub={`${org.activeStaff} active`} />
+          </div>
+          {org.trainerStats.length > 0 && (
+            <div className="mt-5">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Top trainers this month</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                      <th className="py-2 font-medium">Trainer</th>
+                      <th className="py-2 font-medium">Clients</th>
+                      <th className="py-2 font-medium">Revenue</th>
+                      <th className="py-2 font-medium">Incentive</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {org.trainerStats.slice(0, 5).map((t) => (
+                      <tr key={t.trainer_id} className="border-b border-border/50">
+                        <td className="py-2 font-mono text-xs">{t.trainer_id.slice(0, 8)}…</td>
+                        <td className="py-2">{t.clientCount}</td>
+                        <td className="py-2">₹{t.revenue.toLocaleString("en-IN")}</td>
+                        <td className="py-2 text-primary">₹{t.incentive.toLocaleString("en-IN")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
@@ -144,6 +194,18 @@ function Dashboard() {
           <TodaySessions />
         </div>
       </div>
+    </div>
+  );
+}
+
+function OrgKpi({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-muted/20 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3 w-3 text-primary" /> {label}
+      </div>
+      <div className="mt-1 font-display text-lg font-semibold">{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
     </div>
   );
 }
