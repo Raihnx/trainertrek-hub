@@ -82,35 +82,75 @@ export function Header() {
       <Popover>
         <PopoverTrigger className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/30 text-foreground/80 transition hover:bg-muted/50">
           <Bell className="h-[18px] w-[18px]" />
-          {notifs.length > 0 && (
+          {badgeCount > 0 && (
             <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-[0_0_8px_var(--color-primary)]">
-              {notifs.length > 9 ? "9+" : notifs.length}
+              {badgeCount > 9 ? "9+" : badgeCount}
             </span>
           )}
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-80 p-0">
-          <div className="border-b border-border px-4 py-3">
-            <div className="font-display text-sm font-semibold">Notifications</div>
-            <div className="text-xs text-muted-foreground">{notifs.length} active reminder{notifs.length === 1 ? "" : "s"}</div>
+        <PopoverContent align="end" className="w-96 p-0">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div>
+              <div className="font-display text-sm font-semibold">Notifications</div>
+              <div className="text-xs text-muted-foreground">
+                {unreadPersisted.length} unread · {notifs.length} live reminder{notifs.length === 1 ? "" : "s"}
+              </div>
+            </div>
+            {unreadPersisted.length > 0 && (
+              <button
+                onClick={() => markAll.mutate()}
+                className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
+              >
+                Mark all read
+              </button>
+            )}
           </div>
-          <div className="max-h-80 overflow-auto">
-            {notifs.length === 0 ? (
+          <div className="max-h-96 overflow-auto">
+            {badgeCount === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-muted-foreground">All caught up 🎉</div>
             ) : (
-              notifs.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => n.clientId && navigate({ to: "/clients/$id", params: { id: n.clientId } })}
-                  className="flex w-full items-start gap-3 border-b border-border/40 px-4 py-3 text-left transition hover:bg-muted/30"
-                >
-                  <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.type === "expiry" ? "bg-warning" : n.type === "payment" ? "bg-destructive" : "bg-info"}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">{n.title}</div>
-                    <div className="truncate text-xs text-muted-foreground">{n.message}</div>
+              <>
+                {unreadPersisted.slice(0, 6).map((n) => (
+                  <div
+                    key={n.id}
+                    className="group flex items-start gap-3 border-b border-border/40 bg-primary/[0.04] px-4 py-3 text-left"
+                  >
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    <button
+                      onClick={() => n.client_id && navigate({ to: "/clients/$id", params: { id: n.client_id } })}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <div className="text-sm font-medium">{n.title}</div>
+                      <div className="truncate text-xs text-muted-foreground">{n.message}</div>
+                    </button>
+                    <button
+                      onClick={() => markRead.mutate(n.id)}
+                      className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:text-primary"
+                    >
+                      Read
+                    </button>
                   </div>
-                </button>
-              ))
+                ))}
+                {notifs.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => n.clientId && navigate({ to: "/clients/$id", params: { id: n.clientId } })}
+                    className="flex w-full items-start gap-3 border-b border-border/40 px-4 py-3 text-left transition hover:bg-muted/30"
+                  >
+                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.type === "expiry" ? "bg-warning" : n.type === "payment" ? "bg-destructive" : "bg-info"}`} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium">{n.title}</div>
+                      <div className="truncate text-xs text-muted-foreground">{n.message}</div>
+                    </div>
+                  </button>
+                ))}
+              </>
             )}
+          </div>
+          <div className="border-t border-border px-4 py-2">
+            <Link to="/notifications" className="block text-center text-xs font-semibold uppercase tracking-wider text-primary hover:underline">
+              View all notifications
+            </Link>
           </div>
         </PopoverContent>
       </Popover>
