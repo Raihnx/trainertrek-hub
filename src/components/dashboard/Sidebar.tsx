@@ -72,7 +72,12 @@ export function Sidebar() {
                 <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-[image:var(--gradient-primary)]" />
               )}
               <Icon className={cn("h-[18px] w-[18px] transition-colors", active && "text-primary")} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.to === "/notifications" && unread > 0 && (
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
             </Link>
           );
         })}
