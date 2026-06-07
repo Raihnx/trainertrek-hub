@@ -19,7 +19,10 @@ export type Database = {
           action: string
           actor_email: string | null
           actor_id: string
+          actor_name: string | null
+          actor_role: string | null
           created_at: string
+          description: string | null
           id: string
           metadata: Json
           target_id: string | null
@@ -30,7 +33,10 @@ export type Database = {
           action: string
           actor_email?: string | null
           actor_id: string
+          actor_name?: string | null
+          actor_role?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           metadata?: Json
           target_id?: string | null
@@ -41,7 +47,10 @@ export type Database = {
           action?: string
           actor_email?: string | null
           actor_id?: string
+          actor_name?: string | null
+          actor_role?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           metadata?: Json
           target_id?: string | null
@@ -88,6 +97,7 @@ export type Database = {
       clients: {
         Row: {
           amount_paid: number
+          client_type: Database["public"]["Enums"]["client_type"]
           created_at: string
           eligible_days: number
           expiry_date: string
@@ -106,6 +116,7 @@ export type Database = {
         }
         Insert: {
           amount_paid?: number
+          client_type?: Database["public"]["Enums"]["client_type"]
           created_at?: string
           eligible_days?: number
           expiry_date: string
@@ -124,6 +135,7 @@ export type Database = {
         }
         Update: {
           amount_paid?: number
+          client_type?: Database["public"]["Enums"]["client_type"]
           created_at?: string
           eligible_days?: number
           expiry_date?: string
@@ -427,6 +439,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "receptionist" | "trainer"
+      client_type: "GT" | "PT"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -555,6 +568,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "receptionist", "trainer"],
+      client_type: ["GT", "PT"],
     },
   },
 } as const
