@@ -184,6 +184,17 @@ function StaffPage() {
                             <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Enable
                           </Button>
                         )}
+                        {s.id !== user?.id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setDeleteTarget({ id: s.id, name: s.display_name ?? s.email ?? "Staff" })}
+                            disabled={pending === s.id}
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+                          </Button>
+                        )}
                       </div>
                     </td>
 
