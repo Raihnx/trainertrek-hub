@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, Phone, MapPin, Award, Calendar, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, Award, Calendar, Loader2, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useProfile, useUpdateProfile } from "@/lib/queries";
+import { useUserRole } from "@/lib/useRole";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,9 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const { data: profile } = useProfile();
+  const { data: role } = useUserRole();
+  const isAdmin = role === "admin";
+  const isReceptionist = role === "receptionist";
   const update = useUpdateProfile();
   const [form, setForm] = useState({
     display_name: "",
