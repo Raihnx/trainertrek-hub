@@ -105,6 +105,21 @@ function ClientsPage() {
       </div>
 
       <div className="glass space-y-4 rounded-2xl p-5">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
+          <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Client type</span>
+          {(["all", "GT", "PT"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTypeFilter(t)}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                typeFilter === t ? "border-primary/50 bg-primary/15 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t === "all" ? "All clients" : t === "GT" ? "GT clients" : "PT clients"}
+              <span className="ml-1.5 rounded-full bg-background/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">{typeCounts[t]}</span>
+            </button>
+          ))}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
 
