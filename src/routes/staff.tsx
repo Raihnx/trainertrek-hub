@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus, Trash2 } from "lucide-react";
 import { useIsAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,19 @@ import { toast } from "sonner";
 import type { AppRole } from "@/lib/useRole";
 import { PermissionMatrixDialog } from "@/components/staff/PermissionMatrixDialog";
 import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
+import { deleteStaff } from "@/lib/staff.functions";
+import { logAudit } from "@/lib/audit";
+import { useAuth } from "@/lib/useAuth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 export const Route = createFileRoute("/staff")({
