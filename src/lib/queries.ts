@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { monthRange, incentiveFor, clientStatus, daysLeft } from "./incentive";
+import { logAudit } from "./audit";
 
-export type Client = Database["public"]["Tables"]["clients"]["Row"];
+export type ClientType = "GT" | "PT";
+export type Client = Database["public"]["Tables"]["clients"]["Row"] & { client_type?: ClientType };
 export type Attendance = Database["public"]["Tables"]["attendance"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type Package = Database["public"]["Tables"]["packages"]["Row"];
@@ -90,13 +92,14 @@ export function useAddClient() {
       total_days: number;
       eligible_days: number;
       joining_date: string;
+      client_type?: ClientType;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       const joining = new Date(input.joining_date);
       const expiry = new Date(joining);
       expiry.setDate(expiry.getDate() + input.total_days);
-      const { error } = await supabase.from("clients").insert({
+      const { data: inserted, error } = await supabase.from("clients").insert({
         trainer_id: user.id,
         name: input.name,
         phone: input.phone ?? null,
@@ -108,27 +111,98 @@ export function useAddClient() {
         eligible_days: input.eligible_days,
         joining_date: input.joining_date,
         expiry_date: expiry.toISOString().slice(0, 10),
-      });
+        client_type: input.client_type ?? "PT",
+      } as any).select("id").maybeSingle();
       if (error) throw error;
-      // Log payment if anything paid
-      if (input.amount_paid > 0) {
-        // best-effort, ignore error
+      await logAudit({
+        action: "client.create",
+        target_type: "client",
+        target_id: (inserted as any)?.id,
+        target_label: input.name,
+        description: `Created ${input.client_type ?? "PT"} client ${input.name} on ${input.package_name}`,
+        metadata: { client_type: input.client_type ?? "PT", package: input.package_name, amount_paid: input.amount_paid },
+      });
+      if (input.amount_paid > 0 && (inserted as any)?.id) {
+        await supabase.from("payments").insert({
+          trainer_id: user.id,
+          client_id: (inserted as any).id,
+          amount: input.amount_paid,
+          note: "Initial payment on signup",
+        });
+        await logAudit({
+          action: "payment.add",
+          target_type: "client",
+          target_id: (inserted as any).id,
+          target_label: input.name,
+          description: `Recorded initial payment ₹${input.amount_paid.toLocaleString("en-IN")} for ${input.name}`,
+          metadata: { amount: input.amount_paid },
+        });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
+  });
+}
+
+export function useDeleteClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+      if (error) throw error;
+      await logAudit({
+        action: "client.delete",
+        target_type: "client",
+        target_id: id,
+        target_label: name,
+        description: `Deleted client ${name ?? id}`,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
   });
 }
 
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Client> }) => {
+    mutationFn: async ({ id, patch, label, description, action }: { id: string; patch: Partial<Client>; label?: string; description?: string; action?: string }) => {
       const { error } = await supabase.from("clients").update(patch).eq("id", id);
       if (error) throw error;
+      // If payment changed, also write a payments row + audit
+      const paidDelta = (patch as any).__paid_delta as number | undefined;
+      if (paidDelta && paidDelta > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("payments").insert({
+            trainer_id: user.id, client_id: id, amount: paidDelta, note: "Manual payment",
+          });
+          await logAudit({
+            action: "payment.add", target_type: "client", target_id: id, target_label: label,
+            description: `Recorded payment ₹${paidDelta.toLocaleString("en-IN")} for ${label ?? id}`,
+            metadata: { amount: paidDelta },
+          });
+        }
+      }
+      await logAudit({
+        action: action ?? "client.update",
+        target_type: "client",
+        target_id: id,
+        target_label: label,
+        description: description ?? `Updated client ${label ?? id}`,
+        metadata: { keys: Object.keys(patch).filter((k) => k !== "__paid_delta") },
+      });
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["client", v.id] });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
     },
   });
 }
@@ -151,7 +225,7 @@ export function useAttendance(monthISO: string, clientId?: string) {
 export function useMarkAttendance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze"; date?: string }) => {
+    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze"; date?: string; client_name?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       const date = input.date ?? new Date().toISOString().slice(0, 10);
@@ -160,6 +234,14 @@ export function useMarkAttendance() {
         { onConflict: "client_id,date" }
       );
       if (error) throw error;
+      await logAudit({
+        action: "attendance.marked",
+        target_type: "client",
+        target_id: input.client_id,
+        target_label: input.client_name,
+        description: `Marked ${input.client_name ?? "client"} as ${input.status} on ${date}`,
+        metadata: { status: input.status, date },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
@@ -168,7 +250,7 @@ export function useMarkAttendance() {
 export function useFreezeRange() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { client_id: string; startDate: string; days: number }) => {
+    mutationFn: async (input: { client_id: string; startDate: string; days: number; client_name?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       if (input.days <= 0) throw new Error("Days must be > 0");
@@ -186,6 +268,14 @@ export function useFreezeRange() {
       }
       const { error } = await supabase.from("attendance").upsert(rows, { onConflict: "client_id,date" });
       if (error) throw error;
+      await logAudit({
+        action: "membership.freeze",
+        target_type: "client",
+        target_id: input.client_id,
+        target_label: input.client_name,
+        description: `Froze ${input.client_name ?? "client"} membership for ${input.days} days from ${input.startDate}`,
+        metadata: { startDate: input.startDate, days: input.days },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
@@ -211,6 +301,8 @@ export function useDashboardStats(monthISO: string) {
   const expiring = list.filter((c) => c.status === "expiring").length;
   const pendingPayments = list.reduce((s, c) => s + Math.max(0, c.balance), 0);
   const active = list.filter((c) => c.status === "active").length;
+  const gtActive = list.filter((c) => (c as any).client_type === "GT" && c.status !== "expired").length;
+  const ptActive = list.filter((c) => (c as any).client_type !== "GT" && c.status !== "expired").length;
 
   // Today's pending sessions = active clients without attendance today
   const today = new Date().toISOString().slice(0, 10);
@@ -221,6 +313,8 @@ export function useDashboardStats(monthISO: string) {
     loading,
     totalClients: list.length,
     activeClients: active,
+    gtClients: gtActive,
+    ptClients: ptActive,
     todaysSessionsCount: todaysSessions.length,
     todaysSessions: todaysSessions.slice(0, 6),
     monthlyIncentive: Math.round(monthlyIncentive),

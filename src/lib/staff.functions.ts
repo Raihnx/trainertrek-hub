@@ -67,3 +67,36 @@ export const createStaff = createServerFn({ method: "POST" })
 
     return { userId: newUserId };
   });
+
+const DeleteInput = z.object({ userId: z.string().uuid() });
+
+export const deleteStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => DeleteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    if (data.userId === userId) throw new Error("You cannot delete your own account");
+
+    // Verify caller is admin
+    const { data: roleRow, error: roleErr } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleErr) throw new Error(roleErr.message);
+    if (!roleRow) throw new Error("Only admins can delete staff accounts");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Clean linked rows (FKs to auth.users are mostly ON DELETE CASCADE, but
+    // be explicit for clarity and to avoid orphans if cascade is missing).
+    await supabaseAdmin.from("user_permissions").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+
+    const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (delErr) throw new Error(delErr.message);
+
+    return { ok: true };
+  });

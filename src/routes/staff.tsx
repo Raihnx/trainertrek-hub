@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus, Trash2 } from "lucide-react";
 import { useIsAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,19 @@ import { toast } from "sonner";
 import type { AppRole } from "@/lib/useRole";
 import { PermissionMatrixDialog } from "@/components/staff/PermissionMatrixDialog";
 import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
+import { deleteStaff } from "@/lib/staff.functions";
+import { logAudit } from "@/lib/audit";
+import { useAuth } from "@/lib/useAuth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 export const Route = createFileRoute("/staff")({
@@ -29,6 +44,28 @@ function StaffPage() {
   const [pending, setPending] = useState<string | null>(null);
   const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const deleteFn = useServerFn(deleteStaff);
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => deleteFn({ data: { userId: id } }),
+    onSuccess: async (_d, id) => {
+      await logAudit({
+        action: "staff.delete",
+        target_type: "user",
+        target_id: id,
+        target_label: deleteTarget?.name,
+        description: `Deleted staff member ${deleteTarget?.name ?? id}`,
+      });
+      toast.success(`${deleteTarget?.name ?? "Staff"} removed`);
+      setDeleteTarget(null);
+      qc.invalidateQueries({ queryKey: ["staff"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete staff"),
+  });
 
 
   if (roleLoading) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -147,6 +184,17 @@ function StaffPage() {
                             <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Enable
                           </Button>
                         )}
+                        {s.id !== user?.id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setDeleteTarget({ id: s.id, name: s.display_name ?? s.email ?? "Staff" })}
+                            disabled={pending === s.id}
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+                          </Button>
+                        )}
                       </div>
                     </td>
 
@@ -199,6 +247,28 @@ function StaffPage() {
         userName={permTarget?.name ?? ""}
         role={permTarget?.role ?? "trainer"}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o && !deleteMut.isPending) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete staff member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <span className="font-semibold text-foreground">{deleteTarget?.name}</span>? This action cannot be undone. Their account, profile and role assignments will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); if (deleteTarget) deleteMut.mutate(deleteTarget.id); }}
+              disabled={deleteMut.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete staff
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -17,13 +17,33 @@ export const Route = createFileRoute("/audit")({
 });
 
 const actionMeta: Record<string, { label: string; tone: string }> = {
+  "auth.login": { label: "Sign in", tone: "border-success/40 text-success" },
+  "auth.logout": { label: "Sign out", tone: "border-muted-foreground/40 text-muted-foreground" },
+  "auth.password_reset": { label: "Password reset", tone: "border-warning/40 text-warning" },
   "staff.role_change": { label: "Role change", tone: "border-info/40 text-info" },
   "staff.status_change": { label: "Status change", tone: "border-warning/40 text-warning" },
   "staff.permission_set": { label: "Permission set", tone: "border-primary/40 text-primary" },
   "staff.permission_reset": { label: "Permission reset", tone: "border-muted-foreground/40 text-muted-foreground" },
+  "staff.create": { label: "Staff created", tone: "border-success/40 text-success" },
+  "staff.update": { label: "Staff updated", tone: "border-info/40 text-info" },
+  "staff.delete": { label: "Staff deleted", tone: "border-destructive/40 text-destructive" },
+  "client.create": { label: "Client created", tone: "border-success/40 text-success" },
+  "client.update": { label: "Client updated", tone: "border-info/40 text-info" },
+  "client.delete": { label: "Client deleted", tone: "border-destructive/40 text-destructive" },
+  "client.renewal": { label: "Membership renewed", tone: "border-success/40 text-success" },
+  "membership.update": { label: "Membership updated", tone: "border-info/40 text-info" },
+  "membership.package_change": { label: "Package changed", tone: "border-info/40 text-info" },
+  "membership.freeze": { label: "Membership frozen", tone: "border-warning/40 text-warning" },
+  "membership.unfreeze": { label: "Membership resumed", tone: "border-success/40 text-success" },
+  "attendance.marked": { label: "Attendance marked", tone: "border-primary/40 text-primary" },
+  "attendance.edited": { label: "Attendance edited", tone: "border-info/40 text-info" },
+  "payment.add": { label: "Payment added", tone: "border-success/40 text-success" },
+  "payment.update": { label: "Payment updated", tone: "border-info/40 text-info" },
+  "payment.delete": { label: "Payment deleted", tone: "border-destructive/40 text-destructive" },
 };
 
 function describe(e: AuditEntry): string {
+  if (e.description) return e.description;
   const m = e.metadata ?? {};
   switch (e.action) {
     case "staff.role_change":
@@ -132,7 +152,10 @@ function AuditPage() {
                           {when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </td>
-                      <td className="py-3 pr-4 align-top text-muted-foreground">{e.actor_email ?? e.actor_id.slice(0, 8)}</td>
+                      <td className="py-3 pr-4 align-top">
+                        <div className="text-xs font-medium">{e.actor_name ?? e.actor_email ?? e.actor_id.slice(0, 8)}</div>
+                        {e.actor_role && <div className="text-[11px] capitalize text-muted-foreground">{e.actor_role}</div>}
+                      </td>
                       <td className="py-3 pr-4 align-top">
                         {meta ? (
                           <Badge variant="outline" className={meta.tone}>{meta.label}</Badge>

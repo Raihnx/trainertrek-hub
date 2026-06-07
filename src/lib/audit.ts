@@ -2,11 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AuditAction =
+  | "auth.login"
+  | "auth.logout"
+  | "auth.password_reset"
   | "staff.role_change"
   | "staff.status_change"
   | "staff.permission_set"
   | "staff.permission_reset"
+  | "staff.create"
+  | "staff.update"
+  | "staff.delete"
+  | "client.create"
+  | "client.update"
   | "client.delete"
+  | "client.renewal"
+  | "membership.update"
+  | "membership.package_change"
+  | "membership.freeze"
+  | "membership.unfreeze"
+  | "attendance.marked"
+  | "attendance.edited"
+  | "payment.add"
+  | "payment.update"
   | "payment.delete"
   | "settings.update";
 
@@ -14,44 +31,73 @@ export type AuditEntry = {
   id: string;
   actor_id: string;
   actor_email: string | null;
+  actor_role: string | null;
+  actor_name: string | null;
   action: AuditAction | string;
   target_type: string | null;
   target_id: string | null;
   target_label: string | null;
+  description: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
 };
 
-/**
- * Best-effort audit log writer. Never throws — failure to log must not break
- * the underlying admin action.
- */
+let _cachedActor: { id: string; email: string | null; name: string | null; role: string | null } | null = null;
+
+async function resolveActor() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  if (_cachedActor && _cachedActor.id === user.id) return _cachedActor;
+  // fetch profile + role (best-effort)
+  const [{ data: prof }, { data: roleRows }] = await Promise.all([
+    supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+    (supabase as any).from("user_roles").select("role").eq("user_id", user.id),
+  ]);
+  const roles: string[] = (roleRows ?? []).map((r: { role: string }) => r.role);
+  const role = roles.includes("admin") ? "admin" : roles.includes("receptionist") ? "receptionist" : roles.includes("trainer") ? "trainer" : null;
+  _cachedActor = {
+    id: user.id,
+    email: user.email ?? null,
+    name: (prof as any)?.display_name ?? user.email?.split("@")[0] ?? null,
+    role,
+  };
+  return _cachedActor;
+}
+
+/** Best-effort audit log writer. Never throws. */
 export async function logAudit(input: {
   action: AuditAction | string;
   target_type?: string;
   target_id?: string;
   target_label?: string;
+  description?: string;
   metadata?: Record<string, unknown>;
 }) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const actor = await resolveActor();
+    if (!actor) return;
     await (supabase as any).from("admin_audit_log").insert({
-      actor_id: user.id,
-      actor_email: user.email ?? null,
+      actor_id: actor.id,
+      actor_email: actor.email,
+      actor_role: actor.role,
+      actor_name: actor.name,
       action: input.action,
       target_type: input.target_type ?? null,
       target_id: input.target_id ?? null,
       target_label: input.target_label ?? null,
+      description: input.description ?? null,
       metadata: input.metadata ?? {},
     });
   } catch (e) {
-    // swallow — audit must not block UX
     console.warn("[audit] failed to log", e);
   }
 }
 
-export function useAuditLog(limit = 200) {
+export function clearAuditActorCache() {
+  _cachedActor = null;
+}
+
+export function useAuditLog(limit = 500) {
   return useQuery({
     queryKey: ["audit-log", limit],
     queryFn: async (): Promise<AuditEntry[]> => {

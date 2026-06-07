@@ -91,9 +91,10 @@ function Dashboard() {
         </p>
       </div>
 
-      {/* Stat grid (no Revenue / no Renewals) */}
+      {/* Stat grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total PT Clients"     value={String(stats.totalClients)}     icon={Users}       trend={0}  data={spark(1)} accent="gold" />
+        <StatCard label="Total PT Clients"     value={String(stats.ptClients)}        icon={Users}       trend={0}  data={spark(1)} accent="gold" />
+        <StatCard label="Total GT Clients"     value={String(stats.gtClients)}        icon={Users}       trend={0}  data={spark(7)} accent="blue" />
         <StatCard label="Active Clients"       value={String(stats.activeClients)}    icon={UserCheck}   trend={0}  data={spark(2)} accent="green" />
         <StatCard label="Today's Sessions"     value={String(stats.todaysSessionsCount)} icon={CalendarDays} trend={0} data={spark(3)} accent="blue" />
         <StatCard label="Monthly Incentive"    value={`₹${stats.monthlyIncentive.toLocaleString("en-IN")}`} icon={Trophy} trend={0} data={spark(4)} accent="gold" />
@@ -111,8 +112,8 @@ function Dashboard() {
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             <OrgKpi icon={Building2} label="Total clients" value={String(org.totalClients)} />
-            <OrgKpi icon={Wallet} label="Revenue (month)" value={`₹${org.revenueMonth.toLocaleString("en-IN")}`} />
-            <OrgKpi icon={TrendingUp} label="Revenue today" value={`₹${org.revenueToday.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={Wallet} label="Revenue (total paid)" value={`₹${org.revenueAll.toLocaleString("en-IN")}`} />
+            <OrgKpi icon={TrendingUp} label="Revenue (month)" value={`₹${org.revenueMonth.toLocaleString("en-IN")}`} />
             <OrgKpi icon={AlertCircle} label="Outstanding" value={`₹${org.outstanding.toLocaleString("en-IN")}`} />
             <OrgKpi icon={Trophy} label="Incentive (month)" value={`₹${org.monthlyIncentiveAll.toLocaleString("en-IN")}`} />
             <OrgKpi icon={Users} label="Staff" value={`${org.totalTrainers + org.totalReceptionists}`} sub={`${org.activeStaff} active`} />
