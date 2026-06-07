@@ -70,7 +70,9 @@ function ProfilePage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl font-semibold tracking-tight">Profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your trainer profile and credentials.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {isAdmin ? "Manage your administrator profile." : isReceptionist ? "Manage your receptionist profile." : "Manage your trainer profile and credentials."}
+        </p>
       </div>
 
       <form onSubmit={save} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -79,10 +81,17 @@ function ProfilePage() {
           <div className="relative flex flex-col items-center text-center">
             <img src={avatar} alt={name} className="h-28 w-28 rounded-2xl object-cover ring-2 ring-primary/40" />
             <h2 className="mt-4 font-display text-xl font-semibold">{name}</h2>
-            <p className="text-sm text-muted-foreground">{profile?.level ?? "Trainer"}</p>
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Award className="h-3.5 w-3.5" /> Verified trainer
-            </div>
+            <p className="text-sm text-muted-foreground capitalize">{role ?? "Trainer"}</p>
+            {!isAdmin && !isReceptionist && (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Award className="h-3.5 w-3.5" /> Verified trainer
+              </div>
+            )}
+            {isAdmin && (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Shield className="h-3.5 w-3.5" /> Administrator
+              </div>
+            )}
           </div>
 
           <div className="mt-6 space-y-3 text-sm">
@@ -108,18 +117,22 @@ function ProfilePage() {
               <Label>Phone</Label>
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
-            <div>
-              <Label>Specialization</Label>
-              <Input value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} />
-            </div>
+            {!isAdmin && (
+              <div>
+                <Label>Specialization</Label>
+                <Input value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} />
+              </div>
+            )}
             <div className="md:col-span-2">
               <Label>Address</Label>
               <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             </div>
-            <div className="md:col-span-2">
-              <Label>Certifications</Label>
-              <Textarea rows={3} value={form.certifications} onChange={(e) => setForm({ ...form, certifications: e.target.value })} />
-            </div>
+            {!isAdmin && (
+              <div className="md:col-span-2">
+                <Label>Certifications</Label>
+                <Textarea rows={3} value={form.certifications} onChange={(e) => setForm({ ...form, certifications: e.target.value })} />
+              </div>
+            )}
             <div className="md:col-span-2">
               <Label>Photo</Label>
               <div className="flex items-center gap-3">
