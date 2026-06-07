@@ -21,6 +21,7 @@ export function AddClientDialog() {
     amount_paid: 0,
     total_days: 30,
     joining_date: new Date().toISOString().slice(0, 10),
+    client_type: "PT" as "PT" | "GT",
   });
 
   const balance = form.package_amount - form.amount_paid;
@@ -40,7 +41,7 @@ export function AddClientDialog() {
         onSuccess: () => {
           toast.success("Client added");
           setOpen(false);
-          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10) });
+          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10), client_type: "PT" });
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
       }
@@ -71,6 +72,21 @@ export function AddClientDialog() {
             <div>
               <Label>Joining date</Label>
               <Input type="date" value={form.joining_date} onChange={(e) => set("joining_date", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <Label>Client type *</Label>
+              <div className="mt-1 inline-flex rounded-lg border border-border bg-muted/30 p-1">
+                {(["PT", "GT"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => set("client_type", t)}
+                    className={`rounded-md px-4 py-1.5 text-xs font-semibold transition ${form.client_type === t ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {t === "PT" ? "Personal Training (PT)" : "General Training (GT)"}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="col-span-2">
               <Label>Package *</Label>
