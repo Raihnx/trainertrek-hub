@@ -35,13 +35,12 @@ function ClientsPage() {
     return { all: clients.length, GT: gt, PT: pt };
   }, [clients]);
 
-  const packages = useMemo(() => Array.from(new Set(clients.map((c) => c.package_name).filter(Boolean) as string[])), [clients]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return clients.filter((c) => {
       if (q && !(c.name.toLowerCase().includes(q) || (c.package_name ?? "").toLowerCase().includes(q))) return false;
       if (pkgFilter !== "all" && c.package_name !== pkgFilter) return false;
+      if (typeFilter !== "all" && (c as any).client_type !== typeFilter) return false;
       switch (filter) {
         case "active": return c.status === "active";
         case "expired": return c.status === "expired";
@@ -51,7 +50,7 @@ function ClientsPage() {
         default: return true;
       }
     });
-  }, [clients, search, filter, pkgFilter]);
+  }, [clients, search, filter, pkgFilter, typeFilter]);
 
   const attendancePct = useMemo(() => {
     const days = new Map<string, number>();
