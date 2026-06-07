@@ -13,6 +13,7 @@ export const Route = createFileRoute("/clients")({
 });
 
 type FilterKey = "all" | "active" | "expired" | "partial" | "fully_paid" | "expiring";
+type TypeKey = "all" | "GT" | "PT";
 
 function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
@@ -21,6 +22,18 @@ function ClientsPage() {
   const { data: att = [] } = useAttendance(month);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [pkgFilter, setPkgFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<TypeKey>("all");
+
+  const packages = useMemo(() => Array.from(new Set(clients.map((c) => c.package_name).filter(Boolean) as string[])), [clients]);
+
+  const typeCounts = useMemo(() => {
+    let gt = 0, pt = 0;
+    for (const c of clients) {
+      if ((c as any).client_type === "GT") gt++;
+      else pt++;
+    }
+    return { all: clients.length, GT: gt, PT: pt };
+  }, [clients]);
 
   const packages = useMemo(() => Array.from(new Set(clients.map((c) => c.package_name).filter(Boolean) as string[])), [clients]);
 
