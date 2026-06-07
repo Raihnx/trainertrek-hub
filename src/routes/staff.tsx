@@ -44,6 +44,28 @@ function StaffPage() {
   const [pending, setPending] = useState<string | null>(null);
   const [permTarget, setPermTarget] = useState<{ id: string; name: string; role: AppRole } | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const deleteFn = useServerFn(deleteStaff);
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => deleteFn({ data: { userId: id } }),
+    onSuccess: async (_d, id) => {
+      await logAudit({
+        action: "staff.delete",
+        target_type: "user",
+        target_id: id,
+        target_label: deleteTarget?.name,
+        description: `Deleted staff member ${deleteTarget?.name ?? id}`,
+      });
+      toast.success(`${deleteTarget?.name ?? "Staff"} removed`);
+      setDeleteTarget(null);
+      qc.invalidateQueries({ queryKey: ["staff"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to delete staff"),
+  });
 
 
   if (roleLoading) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
