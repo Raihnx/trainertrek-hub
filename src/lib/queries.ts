@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { monthRange, incentiveFor, clientStatus, daysLeft } from "./incentive";
+import { logAudit } from "./audit";
 
-export type Client = Database["public"]["Tables"]["clients"]["Row"];
+export type ClientType = "GT" | "PT";
+export type Client = Database["public"]["Tables"]["clients"]["Row"] & { client_type?: ClientType };
 export type Attendance = Database["public"]["Tables"]["attendance"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type Package = Database["public"]["Tables"]["packages"]["Row"];
@@ -90,13 +92,14 @@ export function useAddClient() {
       total_days: number;
       eligible_days: number;
       joining_date: string;
+      client_type?: ClientType;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       const joining = new Date(input.joining_date);
       const expiry = new Date(joining);
       expiry.setDate(expiry.getDate() + input.total_days);
-      const { error } = await supabase.from("clients").insert({
+      const { data: inserted, error } = await supabase.from("clients").insert({
         trainer_id: user.id,
         name: input.name,
         phone: input.phone ?? null,
@@ -108,27 +111,98 @@ export function useAddClient() {
         eligible_days: input.eligible_days,
         joining_date: input.joining_date,
         expiry_date: expiry.toISOString().slice(0, 10),
-      });
+        client_type: input.client_type ?? "PT",
+      } as any).select("id").maybeSingle();
       if (error) throw error;
-      // Log payment if anything paid
-      if (input.amount_paid > 0) {
-        // best-effort, ignore error
+      await logAudit({
+        action: "client.create",
+        target_type: "client",
+        target_id: (inserted as any)?.id,
+        target_label: input.name,
+        description: `Created ${input.client_type ?? "PT"} client ${input.name} on ${input.package_name}`,
+        metadata: { client_type: input.client_type ?? "PT", package: input.package_name, amount_paid: input.amount_paid },
+      });
+      if (input.amount_paid > 0 && (inserted as any)?.id) {
+        await supabase.from("payments").insert({
+          trainer_id: user.id,
+          client_id: (inserted as any).id,
+          amount: input.amount_paid,
+          note: "Initial payment on signup",
+        });
+        await logAudit({
+          action: "payment.add",
+          target_type: "client",
+          target_id: (inserted as any).id,
+          target_label: input.name,
+          description: `Recorded initial payment ₹${input.amount_paid.toLocaleString("en-IN")} for ${input.name}`,
+          metadata: { amount: input.amount_paid },
+        });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
+  });
+}
+
+export function useDeleteClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+      if (error) throw error;
+      await logAudit({
+        action: "client.delete",
+        target_type: "client",
+        target_id: id,
+        target_label: name,
+        description: `Deleted client ${name ?? id}`,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
+    },
   });
 }
 
 export function useUpdateClient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Client> }) => {
+    mutationFn: async ({ id, patch, label, description, action }: { id: string; patch: Partial<Client>; label?: string; description?: string; action?: string }) => {
       const { error } = await supabase.from("clients").update(patch).eq("id", id);
       if (error) throw error;
+      // If payment changed, also write a payments row + audit
+      const paidDelta = (patch as any).__paid_delta as number | undefined;
+      if (paidDelta && paidDelta > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("payments").insert({
+            trainer_id: user.id, client_id: id, amount: paidDelta, note: "Manual payment",
+          });
+          await logAudit({
+            action: "payment.add", target_type: "client", target_id: id, target_label: label,
+            description: `Recorded payment ₹${paidDelta.toLocaleString("en-IN")} for ${label ?? id}`,
+            metadata: { amount: paidDelta },
+          });
+        }
+      }
+      await logAudit({
+        action: action ?? "client.update",
+        target_type: "client",
+        target_id: id,
+        target_label: label,
+        description: description ?? `Updated client ${label ?? id}`,
+        metadata: { keys: Object.keys(patch).filter((k) => k !== "__paid_delta") },
+      });
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["client", v.id] });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["admin-org-metrics"] });
     },
   });
 }
