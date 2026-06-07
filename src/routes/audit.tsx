@@ -152,7 +152,10 @@ function AuditPage() {
                           {when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </td>
-                      <td className="py-3 pr-4 align-top text-muted-foreground">{e.actor_email ?? e.actor_id.slice(0, 8)}</td>
+                      <td className="py-3 pr-4 align-top">
+                        <div className="text-xs font-medium">{e.actor_name ?? e.actor_email ?? e.actor_id.slice(0, 8)}</div>
+                        {e.actor_role && <div className="text-[11px] capitalize text-muted-foreground">{e.actor_role}</div>}
+                      </td>
                       <td className="py-3 pr-4 align-top">
                         {meta ? (
                           <Badge variant="outline" className={meta.tone}>{meta.label}</Badge>

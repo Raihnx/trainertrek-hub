@@ -41,6 +41,11 @@ export function Header() {
   const badgeCount = notifs.length + unreadPersisted.length;
 
   const handleLogout = async () => {
+    try {
+      const { logAudit, clearAuditActorCache } = await import("@/lib/audit");
+      await logAudit({ action: "auth.logout", description: "Signed out" });
+      clearAuditActorCache();
+    } catch {}
     const { error } = await supabase.auth.signOut();
     if (error) toast.error(error.message);
     else window.location.replace("/auth");

@@ -46,6 +46,9 @@ function AuthPage() {
         setAlertOpen(true);
         return;
       }
+      // Best-effort audit
+      const { logAudit } = await import("@/lib/audit");
+      await logAudit({ action: "auth.login", description: `Signed in via email` });
     } finally {
       setLoading(false);
     }
