@@ -225,7 +225,7 @@ export function useAttendance(monthISO: string, clientId?: string) {
 export function useMarkAttendance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze"; date?: string }) => {
+    mutationFn: async (input: { client_id: string; status: "present" | "absent" | "freeze"; date?: string; client_name?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       const date = input.date ?? new Date().toISOString().slice(0, 10);
@@ -234,6 +234,14 @@ export function useMarkAttendance() {
         { onConflict: "client_id,date" }
       );
       if (error) throw error;
+      await logAudit({
+        action: "attendance.marked",
+        target_type: "client",
+        target_id: input.client_id,
+        target_label: input.client_name,
+        description: `Marked ${input.client_name ?? "client"} as ${input.status} on ${date}`,
+        metadata: { status: input.status, date },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
@@ -242,7 +250,7 @@ export function useMarkAttendance() {
 export function useFreezeRange() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { client_id: string; startDate: string; days: number }) => {
+    mutationFn: async (input: { client_id: string; startDate: string; days: number; client_name?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       if (input.days <= 0) throw new Error("Days must be > 0");
@@ -260,6 +268,14 @@ export function useFreezeRange() {
       }
       const { error } = await supabase.from("attendance").upsert(rows, { onConflict: "client_id,date" });
       if (error) throw error;
+      await logAudit({
+        action: "membership.freeze",
+        target_type: "client",
+        target_id: input.client_id,
+        target_label: input.client_name,
+        description: `Froze ${input.client_name ?? "client"} membership for ${input.days} days from ${input.startDate}`,
+        metadata: { startDate: input.startDate, days: input.days },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
@@ -285,6 +301,8 @@ export function useDashboardStats(monthISO: string) {
   const expiring = list.filter((c) => c.status === "expiring").length;
   const pendingPayments = list.reduce((s, c) => s + Math.max(0, c.balance), 0);
   const active = list.filter((c) => c.status === "active").length;
+  const gtActive = list.filter((c) => (c as any).client_type === "GT" && c.status !== "expired").length;
+  const ptActive = list.filter((c) => (c as any).client_type !== "GT" && c.status !== "expired").length;
 
   // Today's pending sessions = active clients without attendance today
   const today = new Date().toISOString().slice(0, 10);
@@ -295,6 +313,8 @@ export function useDashboardStats(monthISO: string) {
     loading,
     totalClients: list.length,
     activeClients: active,
+    gtClients: gtActive,
+    ptClients: ptActive,
     todaysSessionsCount: todaysSessions.length,
     todaysSessions: todaysSessions.slice(0, 6),
     monthlyIncentive: Math.round(monthlyIncentive),
