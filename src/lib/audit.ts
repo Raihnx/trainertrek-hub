@@ -76,17 +76,15 @@ export async function logAudit(input: {
   try {
     const actor = await resolveActor();
     if (!actor) return;
-    await (supabase as any).from("admin_audit_log").insert({
-      actor_id: actor.id,
-      actor_email: actor.email,
-      actor_role: actor.role,
-      actor_name: actor.name,
-      action: input.action,
-      target_type: input.target_type ?? null,
-      target_id: input.target_id ?? null,
-      target_label: input.target_label ?? null,
-      description: input.description ?? null,
-      metadata: input.metadata ?? {},
+    // Write via SECURITY DEFINER RPC so the server stamps the actor
+    // identity — direct INSERT into admin_audit_log is no longer allowed.
+    await (supabase as any).rpc("log_audit_event", {
+      _action: input.action,
+      _target_type: input.target_type ?? null,
+      _target_id: input.target_id ?? null,
+      _target_label: input.target_label ?? null,
+      _description: input.description ?? null,
+      _metadata: input.metadata ?? {},
     });
   } catch (e) {
     console.warn("[audit] failed to log", e);
