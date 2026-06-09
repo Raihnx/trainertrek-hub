@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole, useIsAdmin } from "@/lib/useRole";
 import { useClients, type ClientWithDerived } from "@/lib/queries";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
+import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
