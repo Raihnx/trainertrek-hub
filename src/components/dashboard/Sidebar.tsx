@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useUnreadCount } from "@/lib/notifications";
@@ -20,12 +20,14 @@ const trainerItems: NavItem[] = [
 const receptionistItems: NavItem[] = [
   { to: "/", label: "Front desk", icon: LayoutDashboard, exact: true },
   { to: "/clients", label: "Members", icon: Users },
+  { to: "/trainers-overview", label: "Trainers floor", icon: LayoutGrid },
   { to: "/memberships", label: "Memberships", icon: BadgeCheck },
   { to: "/attendance", label: "Attendance", icon: CalendarCheck },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
 const adminExtras: NavItem[] = [
+  { to: "/trainers-overview", label: "Trainers floor", icon: LayoutGrid },
   { to: "/staff", label: "Staff", icon: Shield },
   { to: "/audit", label: "Audit log", icon: ScrollText },
 ];
