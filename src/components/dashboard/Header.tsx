@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { Bell, Search, ChevronDown, LogOut, User as UserIcon, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
