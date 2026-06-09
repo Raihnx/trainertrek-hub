@@ -31,6 +31,7 @@ function ClientDetail() {
   const month = currentMonthISO();
   const { data: att = [] } = useAttendance(month, id);
   const update = useUpdateClient();
+  const { allowed: canRecordPayment } = useCan("payments.create");
   const [payOpen, setPayOpen] = useState(false);
   const [payAmount, setPayAmount] = useState(0);
 
