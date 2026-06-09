@@ -94,14 +94,19 @@ export function TrainerAvailability() {
               return (
                 <tr key={t.id} className="group">
                   <td className="sticky left-0 z-10 bg-card px-2 py-1.5 align-middle">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      to="/trainers/$trainerId"
+                      params={{ trainerId: t.id }}
+                      className="flex items-center gap-2 rounded-md -m-1 p-1 hover:bg-muted/30"
+                      title="Open trainer profile"
+                    >
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-[10px] font-bold uppercase text-primary">
                         {name.slice(0, 2)}
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-xs font-medium max-w-[120px]">{name}</div>
+                        <div className="truncate text-xs font-medium max-w-[120px] hover:text-primary">{name}</div>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   {TRAINING_HOURS.map((h) => {
                     const count = inner.get(h) ?? 0;
