@@ -23,6 +23,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TrainersTrainerIdRouteImport } from './routes/trainers.$trainerId'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
 
 const TrainersOverviewRoute = TrainersOverviewRouteImport.update({
@@ -95,6 +96,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrainersTrainerIdRoute = TrainersTrainerIdRouteImport.update({
+  id: '/trainers/$trainerId',
+  path: '/trainers/$trainerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientsIdRoute = ClientsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRoute
   '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/trainers/$trainerId': typeof TrainersTrainerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/staff': typeof StaffRoute
   '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/trainers/$trainerId': typeof TrainersTrainerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/staff': typeof StaffRoute
   '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/trainers/$trainerId': typeof TrainersTrainerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/trainers-overview'
     | '/clients/$id'
+    | '/trainers/$trainerId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/trainers-overview'
     | '/clients/$id'
+    | '/trainers/$trainerId'
   id:
     | '__root__'
     | '/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/trainers-overview'
     | '/clients/$id'
+    | '/trainers/$trainerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   StaffRoute: typeof StaffRoute
   TrainersOverviewRoute: typeof TrainersOverviewRoute
+  TrainersTrainerIdRoute: typeof TrainersTrainerIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trainers/$trainerId': {
+      id: '/trainers/$trainerId'
+      path: '/trainers/$trainerId'
+      fullPath: '/trainers/$trainerId'
+      preLoaderRoute: typeof TrainersTrainerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/clients/$id': {
       id: '/clients/$id'
       path: '/$id'
@@ -360,6 +380,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   StaffRoute: StaffRoute,
   TrainersOverviewRoute: TrainersOverviewRoute,
+  TrainersTrainerIdRoute: TrainersTrainerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

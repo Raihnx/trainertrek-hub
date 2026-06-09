@@ -312,6 +312,7 @@ export type Database = {
           specialization: string | null
           status: string
           updated_at: string
+          working_hours: number[]
         }
         Insert: {
           address?: string | null
@@ -326,6 +327,7 @@ export type Database = {
           specialization?: string | null
           status?: string
           updated_at?: string
+          working_hours?: number[]
         }
         Update: {
           address?: string | null
@@ -340,6 +342,7 @@ export type Database = {
           specialization?: string | null
           status?: string
           updated_at?: string
+          working_hours?: number[]
         }
         Relationships: []
       }
