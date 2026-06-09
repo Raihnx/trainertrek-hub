@@ -122,15 +122,22 @@ function TrainersOverviewPage() {
               >
                 {/* Header */}
                 <div className="mb-3 flex items-center gap-3">
-                  <img src={avatar} alt="" className="h-11 w-11 rounded-full object-cover ring-1 ring-primary/30" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-display text-base font-semibold">
-                      {trainer.display_name || trainer.email}
+                  <Link
+                    to="/trainers/$trainerId"
+                    params={{ trainerId: trainer.id }}
+                    className="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 transition hover:bg-muted/30"
+                    title="Open trainer profile"
+                  >
+                    <img src={avatar} alt="" className="h-11 w-11 rounded-full object-cover ring-1 ring-primary/30" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-display text-base font-semibold hover:text-primary">
+                        {trainer.display_name || trainer.email}
+                      </div>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {trainer.role}
+                      </div>
                     </div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {trainer.role}
-                    </div>
-                  </div>
+                  </Link>
                   {free ? (
                     <Badge variant="outline" className="border-success/40 bg-success/10 text-success">
                       <Coffee className="mr-1 h-3 w-3" /> Free
