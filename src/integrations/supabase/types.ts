@@ -436,6 +436,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _description?: string
+          _metadata?: Json
+          _target_id?: string
+          _target_label?: string
+          _target_type?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "receptionist" | "trainer"
