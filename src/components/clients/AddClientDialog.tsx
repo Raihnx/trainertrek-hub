@@ -9,10 +9,13 @@ import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { uploadAvatar } from "@/lib/upload";
 import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
+import { useCan } from "@/lib/permissions";
 
 export function AddClientDialog() {
   const [open, setOpen] = useState(false);
   const add = useAddClient();
+  const { allowed: canCreate, isLoading: permLoading } = useCan("clients.create");
+  if (permLoading || !canCreate) return null;
   const [form, setForm] = useState({
     name: "",
     phone: "",

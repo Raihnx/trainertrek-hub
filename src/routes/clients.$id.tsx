@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useCan } from "@/lib/permissions";
 
 export const Route = createFileRoute("/clients/$id")({
   head: () => ({ meta: [{ title: "Client — ForgeFit" }, { name: "description", content: "Membership and attendance details." }] }),
@@ -30,6 +31,7 @@ function ClientDetail() {
   const month = currentMonthISO();
   const { data: att = [] } = useAttendance(month, id);
   const update = useUpdateClient();
+  const { allowed: canRecordPayment } = useCan("payments.create");
   const [payOpen, setPayOpen] = useState(false);
   const [payAmount, setPayAmount] = useState(0);
 
@@ -102,6 +104,7 @@ function ClientDetail() {
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
+          {canRecordPayment && (
           <Dialog open={payOpen} onOpenChange={setPayOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
@@ -122,6 +125,7 @@ function ClientDetail() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </div>
 
