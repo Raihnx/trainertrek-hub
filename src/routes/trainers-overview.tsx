@@ -61,7 +61,7 @@ function TrainersOverviewPage() {
 
   const trainerColumns = useMemo(() => {
     return trainers
-      .filter((t) => t.role === "trainer" || t.role === "admin")
+      .filter((t) => t.role === "trainer")
       .map((t) => {
         const assigned = clients.filter((c) => c.trainer_id === t.id);
         const activeAssigned = assigned.filter((c) => clientStatus(c.expiry_date) !== "expired");
