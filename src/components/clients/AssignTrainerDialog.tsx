@@ -15,9 +15,9 @@ export function useAssignableTrainers() {
   return useQuery({
     queryKey: ["assignable-trainers"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("list_assignable_trainers");
+      const { data, error } = await (supabase as any).rpc("list_assignable_trainers");
       if (error) throw error;
-      return (data ?? []) as Trainer[];
+      return ((data ?? []) as Trainer[]);
     },
   });
 }
