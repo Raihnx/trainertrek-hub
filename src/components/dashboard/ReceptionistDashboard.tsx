@@ -1,11 +1,13 @@
-import { useMemo } from "react";
-import { Wallet, Users, AlertCircle, BadgeCheck, CalendarCheck, TrendingUp, Phone } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Wallet, Users, AlertCircle, BadgeCheck, CalendarCheck, TrendingUp, Phone, RefreshCw, UserCog } from "lucide-react";
 import { useAppStore } from "@/lib/app-store";
 import { useAdminOrgMetrics } from "@/lib/admin-queries";
-import { useClients, useProfile } from "@/lib/queries";
+import { useClients, useProfile, type ClientWithDerived } from "@/lib/queries";
 import { monthRange, clientStatus, daysLeft } from "@/lib/incentive";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
+import { RenewClientDialog } from "@/components/clients/RenewClientDialog";
+import { AssignTrainerDialog } from "@/components/clients/AssignTrainerDialog";
 
 export function ReceptionistDashboard() {
   const month = useAppStore((s) => s.month);
@@ -13,6 +15,9 @@ export function ReceptionistDashboard() {
   const { data: org } = useAdminOrgMetrics(month);
   const { data: clients = [] } = useClients();
   const monthLabel = monthRange(month).label;
+
+  const [renewTarget, setRenewTarget] = useState<ClientWithDerived | null>(null);
+  const [assignTarget, setAssignTarget] = useState<ClientWithDerived | null>(null);
 
   const expiringSoon = useMemo(
     () =>
@@ -79,15 +84,15 @@ export function ReceptionistDashboard() {
           ) : (
             <div className="space-y-2">
               {expiringSoon.map((c) => (
-                <div key={c.id} className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/10 p-3">
-                  <div className="min-w-0">
+                <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/10 p-3">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{c.name}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {c.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
                       <span>· {c.package_name}</span>
                     </div>
                   </div>
-                  <div className="shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
                     {c.status === "expired" ? (
                       <Badge variant="outline" className="border-destructive/40 text-destructive">
                         Expired {Math.abs(c.dleft)}d
@@ -97,6 +102,19 @@ export function ReceptionistDashboard() {
                         {c.dleft}d left
                       </Badge>
                     )}
+                    <button
+                      onClick={() => setRenewTarget(c)}
+                      className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/25"
+                    >
+                      <RefreshCw className="h-3 w-3" /> Renew
+                    </button>
+                    <button
+                      onClick={() => setAssignTarget(c)}
+                      title="Assign trainer"
+                      className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-primary"
+                    >
+                      <UserCog className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -118,30 +136,45 @@ export function ReceptionistDashboard() {
           ) : (
             <div className="space-y-2">
               {outstandingClients.map((c) => (
-                <Link
-                  key={c.id}
-                  to="/clients/$id"
-                  params={{ id: c.id }}
-                  className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/10 p-3 transition-colors hover:bg-muted/30"
-                >
-                  <div className="min-w-0">
+                <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/10 p-3">
+                  <Link to="/clients/$id" params={{ id: c.id }} className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{c.name}</div>
                     <div className="text-xs text-muted-foreground">{c.package_name}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-display text-sm font-semibold text-destructive">
-                      ₹{c.balance.toLocaleString("en-IN")}
+                  </Link>
+                  <div className="flex shrink-0 items-center gap-2 text-right">
+                    <div>
+                      <div className="font-display text-sm font-semibold text-destructive">
+                        ₹{c.balance.toLocaleString("en-IN")}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        of ₹{Number(c.package_amount).toLocaleString("en-IN")}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      of ₹{Number(c.package_amount).toLocaleString("en-IN")}
-                    </div>
+                    <button
+                      onClick={() => setAssignTarget(c as any)}
+                      title="Assign trainer"
+                      className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-primary"
+                    >
+                      <UserCog className="h-3 w-3" />
+                    </button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <RenewClientDialog
+        client={renewTarget}
+        open={!!renewTarget}
+        onOpenChange={(v) => !v && setRenewTarget(null)}
+      />
+      <AssignTrainerDialog
+        client={assignTarget}
+        open={!!assignTarget}
+        onOpenChange={(v) => !v && setAssignTarget(null)}
+      />
     </div>
   );
 }
