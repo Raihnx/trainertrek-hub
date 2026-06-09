@@ -8,6 +8,7 @@ import { useAddClient } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { uploadAvatar } from "@/lib/upload";
+import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
 
 export function AddClientDialog() {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,7 @@ export function AddClientDialog() {
     total_days: 30,
     joining_date: new Date().toISOString().slice(0, 10),
     client_type: "PT" as "PT" | "GT",
+    preferred_hour: null as number | null,
   });
 
   const balance = form.package_amount - form.amount_paid;
@@ -41,7 +43,7 @@ export function AddClientDialog() {
         onSuccess: () => {
           toast.success("Client added");
           setOpen(false);
-          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10), client_type: "PT" });
+          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10), client_type: "PT", preferred_hour: null });
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
       }
@@ -107,6 +109,19 @@ export function AddClientDialog() {
             <div>
               <Label>Eligible days</Label>
               <Input value={eligible} readOnly className="bg-muted/30" />
+            </div>
+            <div className="col-span-2">
+              <Label>Favourable time</Label>
+              <select
+                value={form.preferred_hour ?? ""}
+                onChange={(e) => set("preferred_hour", e.target.value === "" ? null : Number(e.target.value))}
+                className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">No preference</option>
+                {TRAINING_HOURS.map((h) => (
+                  <option key={h} value={h}>{formatHourRange(h)}</option>
+                ))}
+              </select>
             </div>
             <div className="col-span-2">
               <Label>Photo</Label>

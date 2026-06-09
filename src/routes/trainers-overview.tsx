@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole, useIsAdmin } from "@/lib/useRole";
 import { useClients, type ClientWithDerived } from "@/lib/queries";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
+import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -180,6 +181,20 @@ function TrainersOverviewPage() {
                   )}
                 </div>
 
+                {/* Hour-by-hour schedule */}
+                <div className="mb-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Schedule
+                    </h3>
+                    <div className="flex items-center gap-2 text-[9px] uppercase tracking-wider text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-warning" /> Booked</span>
+                      <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-success" /> Free</span>
+                    </div>
+                  </div>
+                  <ScheduleStrip clients={assigned} />
+                </div>
+
                 {/* Assign button */}
                 <Button
                   size="sm"
@@ -202,6 +217,50 @@ function TrainersOverviewPage() {
     </div>
   );
 }
+
+function ScheduleStrip({ clients }: { clients: ClientWithDerived[] }) {
+  const byHour = useMemo(() => {
+    const m = new Map<number, ClientWithDerived[]>();
+    for (const c of clients) {
+      const h = (c as any).preferred_hour as number | null | undefined;
+      if (h == null) continue;
+      if (!m.has(h)) m.set(h, []);
+      m.get(h)!.push(c);
+    }
+    return m;
+  }, [clients]);
+
+  return (
+    <ul className="max-h-[240px] space-y-1 overflow-y-auto pr-1">
+      {TRAINING_HOURS.map((h) => {
+        const booked = byHour.get(h) ?? [];
+        const isBooked = booked.length > 0;
+        return (
+          <li
+            key={h}
+            className={`flex items-center gap-2 rounded-md border px-2 py-1.5 text-[11px] ${
+              isBooked
+                ? "border-warning/40 bg-warning/15 text-warning-foreground"
+                : "border-success/40 bg-success/10 text-success"
+            }`}
+          >
+            <span className="w-20 shrink-0 font-semibold tabular-nums text-foreground/80">
+              {formatHourRange(h)}
+            </span>
+            {isBooked ? (
+              <span className="truncate text-foreground">
+                {booked.map((c) => c.name).join(", ")}
+              </span>
+            ) : (
+              <span className="text-success/90">Free</span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 
 function Mini({
   label,

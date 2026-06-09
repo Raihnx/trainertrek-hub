@@ -110,6 +110,7 @@ export type Database = {
           package_name: string | null
           phone: string | null
           photo_url: string | null
+          preferred_hour: number | null
           total_days: number
           trainer_id: string
           updated_at: string
@@ -129,6 +130,7 @@ export type Database = {
           package_name?: string | null
           phone?: string | null
           photo_url?: string | null
+          preferred_hour?: number | null
           total_days?: number
           trainer_id: string
           updated_at?: string
@@ -148,6 +150,7 @@ export type Database = {
           package_name?: string | null
           phone?: string | null
           photo_url?: string | null
+          preferred_hour?: number | null
           total_days?: number
           trainer_id?: string
           updated_at?: string

@@ -93,6 +93,7 @@ export function useAddClient() {
       eligible_days: number;
       joining_date: string;
       client_type?: ClientType;
+      preferred_hour?: number | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
@@ -112,6 +113,7 @@ export function useAddClient() {
         joining_date: input.joining_date,
         expiry_date: expiry.toISOString().slice(0, 10),
         client_type: input.client_type ?? "PT",
+        preferred_hour: input.preferred_hour ?? null,
       } as any).select("id").maybeSingle();
       if (error) throw error;
       await logAudit({

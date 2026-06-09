@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS preferred_hour smallint CHECK (preferred_hour IS NULL OR (preferred_hour >= 0 AND preferred_hour <= 23));
