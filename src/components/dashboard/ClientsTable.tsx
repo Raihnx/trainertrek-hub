@@ -50,8 +50,8 @@ export function ClientsTable({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full min-w-[820px] text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/30 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
             <th className="px-4 py-3 font-semibold">Client</th>
