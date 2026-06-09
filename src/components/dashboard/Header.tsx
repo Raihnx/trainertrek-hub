@@ -199,6 +199,10 @@ export function Header() {
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
+    <SheetContent side="left" className="w-64 border-r border-sidebar-border bg-sidebar p-0">
+      <SidebarHeader />
+      <SidebarNav onNavigate={() => setMobileOpen(false)} />
+    </SheetContent>
     </Sheet>
     </>
   );
