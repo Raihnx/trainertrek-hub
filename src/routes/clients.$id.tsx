@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useCan } from "@/lib/permissions";
 
 export const Route = createFileRoute("/clients/$id")({
   head: () => ({ meta: [{ title: "Client — ForgeFit" }, { name: "description", content: "Membership and attendance details." }] }),
