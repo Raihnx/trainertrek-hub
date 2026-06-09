@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrainersOverviewRouteImport } from './routes/trainers-overview'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReportsRouteImport } from './routes/reports'
@@ -24,6 +25,11 @@ import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
 
+const TrainersOverviewRoute = TrainersOverviewRouteImport.update({
+  id: '/trainers-overview',
+  path: '/trainers-overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRoute
+  '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRoutesByTo {
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRoute
+  '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRoutesById {
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRoute
+  '/trainers-overview': typeof TrainersOverviewRoute
   '/clients/$id': typeof ClientsIdRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/reset-password'
     | '/staff'
+    | '/trainers-overview'
     | '/clients/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/reset-password'
     | '/staff'
+    | '/trainers-overview'
     | '/clients/$id'
   id:
     | '__root__'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/reset-password'
     | '/staff'
+    | '/trainers-overview'
     | '/clients/$id'
   fileRoutesById: FileRoutesById
 }
@@ -209,10 +221,18 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StaffRoute: typeof StaffRoute
+  TrainersOverviewRoute: typeof TrainersOverviewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trainers-overview': {
+      id: '/trainers-overview'
+      path: '/trainers-overview'
+      fullPath: '/trainers-overview'
+      preLoaderRoute: typeof TrainersOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff': {
       id: '/staff'
       path: '/staff'
@@ -339,7 +359,18 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StaffRoute: StaffRoute,
+  TrainersOverviewRoute: TrainersOverviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
