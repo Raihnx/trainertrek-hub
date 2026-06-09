@@ -104,6 +104,7 @@ function ClientDetail() {
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
+          {canRecordPayment && (
           <Dialog open={payOpen} onOpenChange={setPayOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
@@ -124,6 +125,7 @@ function ClientDetail() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </div>
 
