@@ -65,12 +65,12 @@ function TrainersOverviewPage() {
       .map((t) => {
         const assigned = clients.filter((c) => c.trainer_id === t.id);
         const activeAssigned = assigned.filter((c) => clientStatus(c.expiry_date) !== "expired");
-        const todayMap = new Map(
-          todayAtt.filter((a) => a.trainer_id === t.id).map((a) => [a.client_id, a.status]),
+        const todayMap = new Map<string, TodayAttendance["status"]>(
+          todayAtt.filter((a) => a.trainer_id === t.id).map((a) => [a.client_id, a.status] as const),
         );
         const todaySessions = activeAssigned.map((c) => ({
           client: c,
-          status: todayMap.get(c.id) ?? "pending",
+          status: (todayMap.get(c.id) ?? "pending") as "present" | "absent" | "freeze" | "pending",
         }));
         const pending = todaySessions.filter((s) => s.status === "pending").length;
         const done = todaySessions.length - pending;
