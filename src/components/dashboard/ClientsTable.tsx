@@ -29,6 +29,26 @@ export function ClientsTable({
       </div>
     );
   }
+  const qc = useQueryClient();
+  const changeHour = async (c: ClientWithDerived, hourStr: string) => {
+    const next = hourStr === "" ? null : Number(hourStr);
+    const { error } = await supabase.from("clients").update({ preferred_hour: next } as any).eq("id", c.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Updated time for ${c.name}`);
+    await logAudit({
+      action: "client.update_time",
+      target_type: "client",
+      target_id: c.id,
+      target_label: c.name,
+      description: next === null ? `Cleared favourable time for ${c.name}` : `Set favourable time for ${c.name} to ${formatHourRange(next)}`,
+      metadata: { preferred_hour: next },
+    });
+    qc.invalidateQueries({ queryKey: ["clients"] });
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-border">
       <table className="w-full text-sm">
@@ -36,6 +56,7 @@ export function ClientsTable({
           <tr className="border-b border-border bg-muted/30 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
             <th className="px-4 py-3 font-semibold">Client</th>
             <th className="px-4 py-3 font-semibold">Package</th>
+            <th className="px-4 py-3 font-semibold">Time</th>
             <th className="px-4 py-3 font-semibold">Days Left</th>
             <th className="px-4 py-3 font-semibold">Balance</th>
             <th className="px-4 py-3 font-semibold">Attendance</th>
@@ -46,6 +67,7 @@ export function ClientsTable({
         <tbody>
           {rows.map((c) => {
             const pct = attendancePct?.get(c.id) ?? 0;
+            const hour = (c as any).preferred_hour as number | null | undefined;
             return (
               <tr key={c.id} className="border-b border-border/60 transition hover:bg-muted/20">
                 <td className="px-4 py-3">
