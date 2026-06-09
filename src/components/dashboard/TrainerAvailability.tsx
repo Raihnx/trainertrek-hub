@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { Clock, Users } from "lucide-react";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
