@@ -181,6 +181,20 @@ function TrainersOverviewPage() {
                   )}
                 </div>
 
+                {/* Hour-by-hour schedule */}
+                <div className="mb-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Schedule
+                    </h3>
+                    <div className="flex items-center gap-2 text-[9px] uppercase tracking-wider text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-warning" /> Booked</span>
+                      <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-success" /> Free</span>
+                    </div>
+                  </div>
+                  <ScheduleStrip clients={assigned} />
+                </div>
+
                 {/* Assign button */}
                 <Button
                   size="sm"
