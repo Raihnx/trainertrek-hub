@@ -8,6 +8,7 @@ import { useAddClient } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { uploadAvatar } from "@/lib/upload";
+import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
 
 export function AddClientDialog() {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,7 @@ export function AddClientDialog() {
     total_days: 30,
     joining_date: new Date().toISOString().slice(0, 10),
     client_type: "PT" as "PT" | "GT",
+    preferred_hour: null as number | null,
   });
 
   const balance = form.package_amount - form.amount_paid;
