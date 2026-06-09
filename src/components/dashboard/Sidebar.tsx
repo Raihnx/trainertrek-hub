@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useUnreadCount } from "@/lib/notifications";
