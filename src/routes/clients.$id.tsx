@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Wallet, Activity, Phone, Plus, Loader2 } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { ArrowLeft, Calendar, Wallet, Activity, Phone, Plus, Loader2, Lock } from "lucide-react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Bar, BarChart, CartesianGrid, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useState, useMemo } from "react";
 import { useClient, useAttendance, useUpdateClient } from "@/lib/queries";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useCan } from "@/lib/permissions";
 
@@ -104,27 +105,40 @@ function ClientDetail() {
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
-          {canRecordPayment && (
-          <Dialog open={payOpen} onOpenChange={setPayOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
-                <Plus className="mr-1.5 h-4 w-4" /> Record payment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-sm">
-              <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div className="text-xs text-muted-foreground">Current balance: ₹{balance.toLocaleString("en-IN")}</div>
-                <Label>Amount (₹)</Label>
-                <Input type="number" min={1} value={payAmount} onChange={(e) => setPayAmount(Number(e.target.value))} />
-              </div>
-              <DialogFooter>
-                <Button onClick={recordPayment} disabled={update.isPending || payAmount <= 0}>
-                  {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
+          {canRecordPayment ? (
+            <Dialog open={payOpen} onOpenChange={setPayOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
+                  <Plus className="mr-1.5 h-4 w-4" /> Record payment
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div className="text-xs text-muted-foreground">Current balance: ₹{balance.toLocaleString("en-IN")}</div>
+                  <Label>Amount (₹)</Label>
+                  <Input type="number" min={1} value={payAmount} onChange={(e) => setPayAmount(Number(e.target.value))} />
+                </div>
+                <DialogFooter>
+                  <Button onClick={recordPayment} disabled={update.isPending || payAmount <= 0}>
+                    {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Button disabled className="cursor-not-allowed opacity-60">
+                    <Lock className="mr-1.5 h-4 w-4" /> Record payment
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">Permission denied — contact admin</p>
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>
@@ -185,7 +199,7 @@ function ClientDetail() {
                 <Pie data={pieData} dataKey="value" innerRadius={40} outerRadius={65} paddingAngle={3} stroke="none">
                   {pieData.map((p, i) => <Cell key={i} fill={p.color} />)}
                 </Pie>
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                <RechartsTooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -199,7 +213,7 @@ function ClientDetail() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                <RechartsTooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
                 <Bar dataKey="present" stackId="a" fill="var(--color-success)" />
                 <Bar dataKey="absent" stackId="a" fill="var(--color-destructive)" radius={[4, 4, 0, 0]} />
               </BarChart>

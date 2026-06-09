@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, Loader2, Lock } from "lucide-react";
 import { useAddClient } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
@@ -15,7 +16,28 @@ export function AddClientDialog() {
   const [open, setOpen] = useState(false);
   const add = useAddClient();
   const { allowed: canCreate, isLoading: permLoading } = useCan("clients.create");
-  if (permLoading || !canCreate) return null;
+
+  if (permLoading) return null;
+
+  if (!canCreate) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              disabled
+              className="inline-flex h-10 cursor-not-allowed items-center gap-2 rounded-lg bg-muted px-4 text-sm font-semibold text-muted-foreground opacity-60"
+            >
+              <Lock className="h-4 w-4" /> Add client
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p className="text-xs">Permission denied — contact admin</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
   const [form, setForm] = useState({
     name: "",
     phone: "",
