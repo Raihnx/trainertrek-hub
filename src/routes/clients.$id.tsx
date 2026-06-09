@@ -186,7 +186,7 @@ function ClientDetail() {
                 <Pie data={pieData} dataKey="value" innerRadius={40} outerRadius={65} paddingAngle={3} stroke="none">
                   {pieData.map((p, i) => <Cell key={i} fill={p.color} />)}
                 </Pie>
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                <RechartsTooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -200,7 +200,7 @@ function ClientDetail() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                <RechartsTooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
                 <Bar dataKey="present" stackId="a" fill="var(--color-success)" />
                 <Bar dataKey="absent" stackId="a" fill="var(--color-destructive)" radius={[4, 4, 0, 0]} />
               </BarChart>
