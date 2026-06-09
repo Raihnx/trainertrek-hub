@@ -70,7 +70,10 @@ export function ReceptionistDashboard() {
         <Kpi icon={TrendingUp} label="Today" value={`₹${(org?.revenueToday ?? 0).toLocaleString("en-IN")}`} accent="green" />
       </div>
 
+      <TrainerAvailability />
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+
         {/* Expiring / Expired memberships — renewal queue */}
         <div className="glass rounded-2xl p-5">
           <div className="mb-4 flex items-center justify-between">
