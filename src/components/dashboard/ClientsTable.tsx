@@ -1,7 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { StatusBadge } from "./StatusBadge";
 import type { ClientWithDerived } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
+import { TRAINING_HOURS, formatHourRange } from "@/lib/time-slots";
+import { toast } from "sonner";
+import { logAudit } from "@/lib/audit";
 
 function avatarFor(c: ClientWithDerived) {
   return c.photo_url ?? `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.name)}`;
