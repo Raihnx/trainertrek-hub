@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { Bell, Search, ChevronDown, LogOut, User as UserIcon, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -8,7 +8,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SidebarNav, SidebarHeader } from "@/components/dashboard/Sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -57,10 +60,19 @@ export function Header() {
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
   const monthLabel = monthRange(month).label;
   const months = buildMonths();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-6 backdrop-blur-xl">
-      <div className="relative max-w-md flex-1">
+    <>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 lg:px-6 backdrop-blur-xl">
+          <SheetTrigger asChild>
+            <button className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/30 text-foreground/80 transition hover:bg-muted/50 lg:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Open menu</span>
+            </button>
+          </SheetTrigger>
+          <div className="relative max-w-md flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
@@ -187,5 +199,11 @@ export function Header() {
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
+    <SheetContent side="left" className="w-64 border-r border-sidebar-border bg-sidebar p-0">
+      <SidebarHeader />
+      <SidebarNav onNavigate={() => setMobileOpen(false)} />
+    </SheetContent>
+    </Sheet>
+    </>
   );
 }
