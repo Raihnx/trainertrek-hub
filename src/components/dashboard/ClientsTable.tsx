@@ -82,6 +82,19 @@ export function ClientsTable({
                   </div>
                 </td>
                 <td className="px-4 py-3 text-foreground/85">{c.package_name ?? "—"}</td>
+                <td className="px-4 py-3">
+                  <select
+                    value={hour ?? ""}
+                    onChange={(e) => changeHour(c, e.target.value)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                    title="Favourable time"
+                  >
+                    <option value="">—</option>
+                    {TRAINING_HOURS.map((h) => (
+                      <option key={h} value={h}>{formatHourRange(h)}</option>
+                    ))}
+                  </select>
+                </td>
                 <td className="px-4 py-3 font-medium">{c.days_left}d</td>
                 <td className="px-4 py-3">
                   <span className={c.balance > 0 ? "font-semibold text-warning" : "text-muted-foreground"}>
