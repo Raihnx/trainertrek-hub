@@ -8,6 +8,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { RenewClientDialog } from "@/components/clients/RenewClientDialog";
 import { AssignTrainerDialog } from "@/components/clients/AssignTrainerDialog";
+import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability";
 
 export function ReceptionistDashboard() {
   const month = useAppStore((s) => s.month);
