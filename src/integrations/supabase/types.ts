@@ -436,6 +436,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_assignable_trainers: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+          role: string
+        }[]
+      }
       log_audit_event: {
         Args: {
           _action: string
