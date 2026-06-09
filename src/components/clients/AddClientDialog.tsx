@@ -43,7 +43,7 @@ export function AddClientDialog() {
         onSuccess: () => {
           toast.success("Client added");
           setOpen(false);
-          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10), client_type: "PT" });
+          setForm({ name: "", phone: "", photo_url: "", package_name: "", package_amount: 0, amount_paid: 0, total_days: 30, joining_date: new Date().toISOString().slice(0, 10), client_type: "PT", preferred_hour: null });
         },
         onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
       }
