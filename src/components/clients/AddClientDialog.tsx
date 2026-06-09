@@ -111,6 +111,19 @@ export function AddClientDialog() {
               <Input value={eligible} readOnly className="bg-muted/30" />
             </div>
             <div className="col-span-2">
+              <Label>Favourable time</Label>
+              <select
+                value={form.preferred_hour ?? ""}
+                onChange={(e) => set("preferred_hour", e.target.value === "" ? null : Number(e.target.value))}
+                className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">No preference</option>
+                {TRAINING_HOURS.map((h) => (
+                  <option key={h} value={h}>{formatHourRange(h)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2">
               <Label>Photo</Label>
               <div className="flex items-center gap-2">
                 <Input placeholder="https://… or upload" value={form.photo_url} onChange={(e) => set("photo_url", e.target.value)} />
