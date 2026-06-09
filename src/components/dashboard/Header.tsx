@@ -60,10 +60,26 @@ export function Header() {
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
   const monthLabel = monthRange(month).label;
   const months = buildMonths();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-6 backdrop-blur-xl">
-      <div className="relative max-w-md flex-1">
+    <>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-64 border-r border-sidebar-border bg-sidebar p-0">
+          <SidebarHeader />
+          <SidebarNav onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 lg:px-6 backdrop-blur-xl">
+        <Sheet>
+          <SheetTrigger asChild>
+            <button className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/30 text-foreground/80 transition hover:bg-muted/50 lg:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Open menu</span>
+            </button>
+          </SheetTrigger>
+        </Sheet>
+        <div className="relative max-w-md flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
