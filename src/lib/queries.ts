@@ -283,6 +283,30 @@ export function useFreezeRange() {
   });
 }
 
+export function useUnfreezeAttendance() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { client_id: string; date: string; client_name?: string }) => {
+      const { error } = await supabase
+        .from("attendance")
+        .delete()
+        .eq("client_id", input.client_id)
+        .eq("date", input.date)
+        .eq("status", "freeze");
+      if (error) throw error;
+      await logAudit({
+        action: "membership.unfreeze",
+        target_type: "client",
+        target_id: input.client_id,
+        target_label: input.client_name,
+        description: `Unfroze ${input.client_name ?? "client"} on ${input.date}`,
+        metadata: { date: input.date },
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+  });
+}
+
 // -------- Derived dashboard stats --------
 export function useDashboardStats(monthISO: string) {
   const clients = useClients();
