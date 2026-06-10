@@ -13,6 +13,7 @@ import { useMemo } from "react";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useAdminOrgMetrics } from "@/lib/admin-queries";
 import { ReceptionistDashboard } from "@/components/dashboard/ReceptionistDashboard";
+import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability";
 
 export const Route = createFileRoute("/")({
   head: () => ({
