@@ -220,10 +220,19 @@ function StaffPage() {
           <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
           <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="shrink-0">
-          <UserPlus className="mr-2 h-4 w-4" /> Add staff
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setAddOpen(true)} className="shrink-0">
+            <UserPlus className="mr-2 h-4 w-4" /> Add staff
+          </Button>
+        )}
       </div>
+
+      {isSecondaryAdmin && (
+        <div className="glass rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-200">
+          <span className="font-semibold">Read-only access:</span> you are a secondary admin. You can view all data but cannot add, edit, or delete records.
+        </div>
+      )}
+
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi icon={Users} label="Trainers" value={String(org?.totalTrainers ?? trainers.length)} />
