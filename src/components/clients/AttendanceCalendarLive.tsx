@@ -24,8 +24,8 @@ const legend = [
   { label: "Present", cls: "bg-success" },
   { label: "Absent",  cls: "bg-destructive" },
   { label: "Freeze",  cls: "bg-warning" },
-  { label: "Paid", cls: "bg-sky-300" },
-  { label: "Unpaid", cls: "bg-sky-300 ring-1 ring-destructive" },
+  { label: "Paid", cls: "bg-slate-300" },
+  { label: "Unpaid", cls: "bg-slate-300" },
 ];
 
 export function AttendanceCalendarLive({
@@ -154,8 +154,8 @@ export function AttendanceCalendarLive({
 
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
           const baseShade =
-            !st && shade === "paid" ? "bg-sky-200/60 border-sky-400/50 text-foreground hover:bg-sky-200"
-            : !st && shade === "pending" ? "bg-sky-200/60 border-sky-400/50 text-foreground hover:bg-sky-200"
+            !st && shade === "paid" ? "bg-slate-200/40 border-slate-400/30 text-foreground hover:bg-slate-200/60"
+            : !st && shade === "pending" ? "bg-slate-200/40 border-slate-400/30 text-foreground hover:bg-slate-200/60"
             : "";
 
           const cellBtn = (
@@ -168,12 +168,13 @@ export function AttendanceCalendarLive({
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
             >
-              {day}
+              {!st && shade === "pending" ? (
+                <span className="text-destructive">{day}</span>
+              ) : (
+                day
+              )}
               {st === "freeze" && (
                 <Snowflake className="absolute right-0.5 top-0.5 h-2.5 w-2.5 text-warning" />
-              )}
-              {!st && shade === "pending" && (
-                <span className="absolute right-0.5 top-0 text-[10px] font-bold leading-none text-destructive">!</span>
               )}
             </button>
           );
