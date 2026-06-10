@@ -24,7 +24,8 @@ const legend = [
   { label: "Present", cls: "bg-success" },
   { label: "Absent",  cls: "bg-destructive" },
   { label: "Freeze",  cls: "bg-warning" },
-  { label: "Eligible", cls: "bg-primary/40" },
+  { label: "Paid", cls: "bg-primary/40" },
+  { label: "Pending", cls: "bg-amber-500/30" },
 ];
 
 export function AttendanceCalendarLive({
