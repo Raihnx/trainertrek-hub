@@ -13,6 +13,7 @@ import { useMemo } from "react";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useAdminOrgMetrics } from "@/lib/admin-queries";
 import { ReceptionistDashboard } from "@/components/dashboard/ReceptionistDashboard";
+import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -147,6 +148,8 @@ function Dashboard() {
           )}
         </div>
       )}
+
+      {isAdmin && <TrainerAvailability />}
 
       {/* Main grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">

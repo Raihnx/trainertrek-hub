@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
 import { TRAINING_HOURS, formatHour } from "@/lib/time-slots";
@@ -15,19 +16,26 @@ export function TrainerAvailability() {
     [trainers],
   );
 
-  // Build busy map: trainer_id -> hour -> count of active clients
+  // Build busy map: trainer_id -> hour -> client list
   const busy = useMemo(() => {
-    const m = new Map<string, Map<number, number>>();
+    const m = new Map<string, Map<number, typeof clients>>();
     for (const c of clients) {
       if (c.status === "expired") continue;
       const h = (c as any).preferred_hour as number | null | undefined;
       if (h == null) continue;
       if (!m.has(c.trainer_id)) m.set(c.trainer_id, new Map());
       const inner = m.get(c.trainer_id)!;
-      inner.set(h, (inner.get(h) ?? 0) + 1);
+      const arr = inner.get(h) ?? [];
+      arr.push(c);
+      inner.set(h, arr);
     }
     return m;
   }, [clients]);
+
+  const [picked, setPicked] = useState<
+    | { trainerName: string; hour: number; clients: typeof clients }
+    | null
+  >(null);
 
   if (isLoading) {
     return (
@@ -87,8 +95,8 @@ export function TrainerAvailability() {
           </thead>
           <tbody>
             {trainerOnly.map((t) => {
-              const inner = busy.get(t.id) ?? new Map<number, number>();
-              const busyCount = TRAINING_HOURS.filter((h) => (inner.get(h) ?? 0) > 0).length;
+              const inner = busy.get(t.id) ?? new Map<number, typeof clients>();
+              const busyCount = TRAINING_HOURS.filter((h) => (inner.get(h)?.length ?? 0) > 0).length;
               const freeCount = totalSlots - busyCount;
               const name = t.display_name || t.email || "Trainer";
               return (
@@ -109,7 +117,8 @@ export function TrainerAvailability() {
                     </Link>
                   </td>
                   {TRAINING_HOURS.map((h) => {
-                    const count = inner.get(h) ?? 0;
+                    const list = inner.get(h) ?? [];
+                    const count = list.length;
                     const cls =
                       count === 0
                         ? "bg-success/15 border-success/30 text-success/80"
@@ -118,12 +127,15 @@ export function TrainerAvailability() {
                           : "bg-destructive/30 border-destructive/50 text-destructive";
                     return (
                       <td key={h} className="px-0.5 py-0.5">
-                        <div
+                        <button
+                          type="button"
+                          disabled={count === 0}
+                          onClick={() => setPicked({ trainerName: name, hour: h, clients: list })}
                           title={`${name} · ${formatHour(h)}–${formatHour(h + 1)} · ${count === 0 ? "Free" : count + " booked"}`}
-                          className={`flex h-7 items-center justify-center rounded border text-[10px] font-semibold tabular-nums ${cls}`}
+                          className={`flex h-7 w-full items-center justify-center rounded border text-[10px] font-semibold tabular-nums ${cls} ${count > 0 ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
                         >
                           {count === 0 ? "" : count}
-                        </div>
+                        </button>
                       </td>
                     );
                   })}
@@ -139,6 +151,43 @@ export function TrainerAvailability() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!picked} onOpenChange={(v) => !v && setPicked(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {picked?.trainerName} · {picked && formatHour(picked.hour)}–{picked && formatHour(picked.hour + 1)}
+            </DialogTitle>
+            <DialogDescription>
+              {picked?.clients.length} client{(picked?.clients.length ?? 0) === 1 ? "" : "s"} booked this hour
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+            {picked?.clients.map((c) => (
+              <Link
+                key={c.id}
+                to="/clients/$id"
+                params={{ id: c.id }}
+                onClick={() => setPicked(null)}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/10 p-3 hover:border-primary/40 hover:bg-muted/20"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{c.name}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {c.phone && (
+                      <span className="inline-flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {c.phone}
+                      </span>
+                    )}
+                    {c.package_name && <span>· {c.package_name}</span>}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
