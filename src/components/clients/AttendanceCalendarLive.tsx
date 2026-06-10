@@ -293,12 +293,12 @@ export function AttendanceCalendarLive({
       </div>
 
       <Dialog open={freezeOpen} onOpenChange={setFreezeOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Freeze membership</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
               Starting{" "}
               <span className="font-medium text-foreground">
                 {freezeStartISO ? new Date(freezeStartISO).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
