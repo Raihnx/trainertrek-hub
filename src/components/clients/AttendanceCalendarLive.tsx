@@ -187,6 +187,11 @@ export function AttendanceCalendarLive({
           }
 
           return (
+          if (!canMark) {
+            return <div key={day}>{cellBtn}</div>;
+          }
+
+          return (
             <Popover key={day}>
               <PopoverTrigger asChild>{cellBtn}</PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="center">
