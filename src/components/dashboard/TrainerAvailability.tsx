@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Users, Phone } from "lucide-react";
+import { Clock, Users, Phone, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
 import { TRAINING_HOURS, formatHour } from "@/lib/time-slots";
+import { useIsAdmin } from "@/lib/useRole";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { logAudit } from "@/lib/audit";
+import { toast } from "sonner";
 
 export function TrainerAvailability() {
   const { data: trainers = [], isLoading } = useAssignableTrainers();
