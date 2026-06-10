@@ -15,15 +15,11 @@ export const createStaff = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Verify caller is admin (RLS-respecting query)
-    const { data: roleRow, error: roleErr } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+    // Verify caller is the primary admin (only the first-created admin can manage staff)
+    const { data: isPrimary, error: roleErr } = await supabase
+      .rpc("is_primary_admin", { _user_id: userId });
     if (roleErr) throw new Error(roleErr.message);
-    if (!roleRow) throw new Error("Only admins can create staff accounts");
+    if (!isPrimary) throw new Error("Only the primary admin can create staff accounts");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -77,15 +73,11 @@ export const deleteStaff = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     if (data.userId === userId) throw new Error("You cannot delete your own account");
 
-    // Verify caller is admin
-    const { data: roleRow, error: roleErr } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+    // Verify caller is the primary admin
+    const { data: isPrimary, error: roleErr } = await supabase
+      .rpc("is_primary_admin", { _user_id: userId });
     if (roleErr) throw new Error(roleErr.message);
-    if (!roleRow) throw new Error("Only admins can delete staff accounts");
+    if (!isPrimary) throw new Error("Only the primary admin can delete staff accounts");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

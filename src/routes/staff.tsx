@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus, Trash2 } from "lucide-react";
-import { useIsAdmin } from "@/lib/useRole";
+import { useIsAdmin, useIsPrimaryAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -35,6 +35,8 @@ export const Route = createFileRoute("/staff")({
 
 function StaffPage() {
   const { isAdmin, isLoading: roleLoading } = useIsAdmin();
+  const { isPrimaryAdmin, isSecondaryAdmin } = useIsPrimaryAdmin();
+  const canEdit = isPrimaryAdmin;
   const month = useAppStore((s) => s.month);
   const { data: staff = [], isLoading } = useStaff();
   const { data: org } = useAdminOrgMetrics(month);
@@ -155,7 +157,7 @@ function StaffPage() {
                         : <Badge variant="outline" className="border-destructive/40 text-destructive">Disabled</Badge>}
                     </td>
                     <td className="py-3">
-                      <Select value={s.role} onValueChange={(v) => handleRole(s.id, v as AppRole)} disabled={pending === s.id}>
+                      <Select value={s.role} onValueChange={(v) => handleRole(s.id, v as AppRole)} disabled={pending === s.id || !canEdit}>
                         <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>
@@ -166,25 +168,27 @@ function StaffPage() {
                     </td>
                     <td className="py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setPermTarget({ id: s.id, name: s.display_name ?? s.email ?? "Staff", role: s.role })}
-                        >
-                          <KeyRound className="mr-1.5 h-3.5 w-3.5" /> Permissions
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setPermTarget({ id: s.id, name: s.display_name ?? s.email ?? "Staff", role: s.role })}
+                          >
+                            <KeyRound className="mr-1.5 h-3.5 w-3.5" /> Permissions
+                          </Button>
+                        )}
                         {pending === s.id ? (
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        ) : s.status === "active" ? (
+                        ) : canEdit && s.status === "active" ? (
                           <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "inactive")}>
                             <UserX className="mr-1.5 h-3.5 w-3.5" /> Disable
                           </Button>
-                        ) : (
+                        ) : canEdit && s.status !== "active" ? (
                           <Button size="sm" variant="outline" onClick={() => handleStatus(s.id, "active")}>
                             <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Enable
                           </Button>
-                        )}
-                        {s.id !== user?.id && (
+                        ) : null}
+                        {canEdit && s.id !== user?.id && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -216,10 +220,19 @@ function StaffPage() {
           <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">Staff <span className="text-gradient-gold">management</span></h1>
           <p className="mt-1 text-sm text-muted-foreground">Trainers, receptionists and admins across your gym.</p>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="shrink-0">
-          <UserPlus className="mr-2 h-4 w-4" /> Add staff
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setAddOpen(true)} className="shrink-0">
+            <UserPlus className="mr-2 h-4 w-4" /> Add staff
+          </Button>
+        )}
       </div>
+
+      {isSecondaryAdmin && (
+        <div className="glass rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-200">
+          <span className="font-semibold">Read-only access:</span> you are a secondary admin. You can view all data but cannot add, edit, or delete records.
+        </div>
+      )}
+
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi icon={Users} label="Trainers" value={String(org?.totalTrainers ?? trainers.length)} />
