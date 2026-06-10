@@ -139,10 +139,11 @@
 
   body {
     background-image:
-      radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.78 0.16 70 / 0.08), transparent),
-      radial-gradient(ellipse 60% 50% at 90% 90%, oklch(0.65 0.18 45 / 0.06), transparent);
+      radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.58 0.22 27 / 0.08), transparent),
+      radial-gradient(ellipse 60% 50% at 90% 90%, oklch(0.58 0.22 27 / 0.05), transparent);
     background-attachment: fixed;
   }
+
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
