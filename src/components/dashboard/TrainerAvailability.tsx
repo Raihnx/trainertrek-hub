@@ -216,7 +216,7 @@ export function TrainerAvailability() {
                     {c.package_name && <span>· {c.package_name}</span>}
                   </div>
                 </Link>
-                {isAdmin && (
+                {canManageSlots && (
                   <button
                     type="button"
                     onClick={() => freeSlot(c.id, c.name)}
