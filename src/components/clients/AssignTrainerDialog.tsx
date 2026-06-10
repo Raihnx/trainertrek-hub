@@ -34,6 +34,7 @@ export function AssignTrainerDialog({
 }) {
   const qc = useQueryClient();
   const { data: trainers = [], isLoading } = useAssignableTrainers();
+  const { allowed: canAssign } = useCan("trainers.assign");
   const [trainerId, setTrainerId] = useState("");
   const [saving, setSaving] = useState(false);
 
