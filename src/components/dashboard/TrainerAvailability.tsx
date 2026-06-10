@@ -16,19 +16,26 @@ export function TrainerAvailability() {
     [trainers],
   );
 
-  // Build busy map: trainer_id -> hour -> count of active clients
+  // Build busy map: trainer_id -> hour -> client list
   const busy = useMemo(() => {
-    const m = new Map<string, Map<number, number>>();
+    const m = new Map<string, Map<number, typeof clients>>();
     for (const c of clients) {
       if (c.status === "expired") continue;
       const h = (c as any).preferred_hour as number | null | undefined;
       if (h == null) continue;
       if (!m.has(c.trainer_id)) m.set(c.trainer_id, new Map());
       const inner = m.get(c.trainer_id)!;
-      inner.set(h, (inner.get(h) ?? 0) + 1);
+      const arr = inner.get(h) ?? [];
+      arr.push(c);
+      inner.set(h, arr);
     }
     return m;
   }, [clients]);
+
+  const [picked, setPicked] = useState<
+    | { trainerName: string; hour: number; clients: typeof clients }
+    | null
+  >(null);
 
   if (isLoading) {
     return (
