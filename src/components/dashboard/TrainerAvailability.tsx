@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
 import { TRAINING_HOURS, formatHour } from "@/lib/time-slots";
