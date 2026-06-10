@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAttendance, useMarkAttendance, useFreezeRange } from "@/lib/queries";
+import { useAttendance, useMarkAttendance, useFreezeRange, useUnfreezeAttendance } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Check, X, Snowflake, Loader2, Lock } from "lucide-react";
+import { Check, X, Snowflake, Loader2, ChevronLeft, ChevronRight, Sun } from "lucide-react";
 import { useCan } from "@/lib/permissions";
 
 type AttStatus = "present" | "absent" | "freeze" | "future" | "none";
@@ -25,8 +25,6 @@ const legend = [
   { label: "Present", cls: "bg-success" },
   { label: "Absent",  cls: "bg-destructive" },
   { label: "Freeze",  cls: "bg-warning" },
-  { label: "Paid", cls: "bg-slate-500/40 border border-slate-500/60" },
-  { label: "Unpaid", cls: "bg-slate-500/40 border border-slate-500/60" },
 ];
 
 export function AttendanceCalendarLive({
@@ -35,18 +33,41 @@ export function AttendanceCalendarLive({
   totalDays,
   amountPaid,
   packageAmount,
+  expiryDate,
 }: {
   clientId: string;
   joiningDate: string;
   totalDays: number;
   amountPaid: number;
   packageAmount: number;
+  expiryDate?: string;
 }) {
   const today = new Date();
-  const monthISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  today.setHours(0, 0, 0, 0);
+
+  const joinD = new Date(joiningDate);
+  joinD.setHours(0, 0, 0, 0);
+  const expiryD = expiryDate ? new Date(expiryDate) : new Date(today);
+  expiryD.setHours(0, 0, 0, 0);
+
+  const minMonth = { y: joinD.getFullYear(), m: joinD.getMonth() };
+  const maxMonth = { y: expiryD.getFullYear(), m: expiryD.getMonth() };
+  const todayMonth = { y: today.getFullYear(), m: today.getMonth() };
+  // clamp initial to today within bounds
+  const clampedInit = (() => {
+    const idx = todayMonth.y * 12 + todayMonth.m;
+    const minIdx = minMonth.y * 12 + minMonth.m;
+    const maxIdx = maxMonth.y * 12 + maxMonth.m;
+    const c = Math.min(Math.max(idx, minIdx), maxIdx);
+    return { y: Math.floor(c / 12), m: c % 12 };
+  })();
+  const [cursor, setCursor] = useState<{ y: number; m: number }>(clampedInit);
+
+  const monthISO = `${cursor.y}-${String(cursor.m + 1).padStart(2, "0")}`;
   const { data: att = [] } = useAttendance(monthISO, clientId);
   const mark = useMarkAttendance();
   const freezeRange = useFreezeRange();
+  const unfreeze = useUnfreezeAttendance();
   const { allowed: canMark } = useCan("attendance.mark");
 
   const [freezeOpen, setFreezeOpen] = useState(false);
@@ -59,22 +80,17 @@ export function AttendanceCalendarLive({
     return m;
   }, [att]);
 
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const todayDay = today.getDate();
+  const year = cursor.y;
+  const month = cursor.m;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDow = new Date(year, month, 1).getDay();
-  const monthName = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const monthName = new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-  const joinD = new Date(joiningDate);
-  joinD.setHours(0, 0, 0, 0);
   const paidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
-  // Sorted freeze ISOs from current month for shifting the membership window
   const freezeISOs = useMemo(
     () => Array.from(attMap.entries()).filter(([, s]) => s === "freeze").map(([d]) => d).sort(),
     [attMap],
   );
-
 
   const isoOf = (day: number) =>
     `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -110,41 +126,62 @@ export function AttendanceCalendarLive({
     );
   };
 
+  const doUnfreeze = (iso: string) => {
+    unfreeze.mutate(
+      { client_id: clientId, date: iso },
+      {
+        onSuccess: () => toast.success("Unfrozen"),
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+      },
+    );
+  };
+
+  const curIdx = year * 12 + month;
+  const minIdx = minMonth.y * 12 + minMonth.m;
+  const maxIdx = maxMonth.y * 12 + maxMonth.m;
+  const canPrev = curIdx > minIdx;
+  const canNext = curIdx < maxIdx;
+  const shift = (delta: number) => {
+    const next = curIdx + delta;
+    setCursor({ y: Math.floor(next / 12), m: next % 12 });
+  };
+
   return (
-    <div className="glass rounded-2xl p-5">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className="font-display text-base font-semibold">Attendance — {monthName}</h3>
-          <p className="text-xs text-muted-foreground">
-            Tap a day to choose Present, Absent, or Freeze. Freeze can be applied to today or upcoming days.
-          </p>
+    <div className="glass rounded-2xl p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Button size="icon" variant="ghost" disabled={!canPrev} onClick={() => shift(-1)} className="h-7 w-7">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="font-display text-sm font-semibold min-w-[140px] text-center">{monthName}</h3>
+          <Button size="icon" variant="ghost" disabled={!canNext} onClick={() => shift(1)} className="h-7 w-7">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
           {legend.map((l) => (
-            <span key={l.label} className="inline-flex items-center gap-1.5">
-              <span className={cn("h-2 w-2 rounded-full", l.cls)} />
+            <span key={l.label} className="inline-flex items-center gap-1">
+              <span className={cn("h-1.5 w-1.5 rounded-full", l.cls)} />
               {l.label}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
-        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-1">{d}</div>)}
+      <div className="grid grid-cols-7 gap-1 text-center text-[9px] uppercase tracking-wider text-muted-foreground">
+        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-0.5">{d}</div>)}
       </div>
-      <div className="mt-1 grid grid-cols-7 gap-1.5">
+      <div className="mt-0.5 grid grid-cols-7 gap-1 max-w-sm">
         {Array.from({ length: firstDow }).map((_, i) => <div key={`p${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const date = new Date(year, month, day);
           date.setHours(0, 0, 0, 0);
           const iso = isoOf(day);
           const st = attMap.get(iso);
-          const isPast = day < todayDay;
-          const isToday = day === todayDay;
-          const isFuture = day > todayDay;
+          const isPast = date.getTime() < today.getTime();
+          const isToday = date.getTime() === today.getTime();
+          const isFuture = date.getTime() > today.getTime();
 
-          // Compute membership shade with freeze-extension.
-          // Days before this date that are frozen (in current month, within membership) shift the window.
           const dayOffset = Math.floor((date.getTime() - joinD.getTime()) / 86400000);
           let shade: "paid" | "pending" | null = null;
           if (dayOffset >= 0) {
@@ -156,17 +193,17 @@ export function AttendanceCalendarLive({
 
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
           const baseShade =
-            !st && shade === "paid" ? "bg-slate-500/20 text-foreground border-slate-500/40 hover:bg-slate-500/30"
-            : !st && shade === "pending" ? "bg-slate-500/20 text-foreground border-slate-500/40 hover:bg-slate-500/30"
-            : "";
+            !st && (shade === "paid" || shade === "pending")
+              ? "bg-slate-500/20 text-foreground border-slate-500/40 hover:bg-slate-500/30"
+              : "";
 
           const cellBtn = (
             <button
               disabled={isPast && !st}
               className={cn(
-                "relative aspect-square w-full rounded-lg border text-xs font-medium transition",
+                "relative aspect-square w-full rounded-md border text-[10px] font-medium transition",
                 st ? colorMap[status] : (baseShade || colorMap[status]),
-                isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                isToday && "ring-1 ring-primary ring-offset-1 ring-offset-background",
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
             >
@@ -176,12 +213,11 @@ export function AttendanceCalendarLive({
                 day
               )}
               {st === "freeze" && (
-                <Snowflake className="absolute right-0.5 top-0.5 h-2.5 w-2.5 text-warning" />
+                <Snowflake className="absolute right-0 top-0 h-2 w-2 text-warning" />
               )}
             </button>
           );
 
-          // Past days without a record are locked
           if (isPast && !st) {
             return <div key={day}>{cellBtn}</div>;
           }
@@ -198,32 +234,45 @@ export function AttendanceCalendarLive({
                   {date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={!isToday}
-                    onClick={() => markStatus(iso, "present")}
-                    className="justify-start gap-2 text-success hover:bg-success/10 hover:text-success"
-                  >
-                    <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={!isToday}
-                    onClick={() => markStatus(iso, "absent")}
-                    className="justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => openFreezeDialog(iso)}
-                    className="justify-start gap-2 text-warning hover:bg-warning/10 hover:text-warning"
-                  >
-                    <Snowflake className="h-4 w-4" /> Freeze…
-                  </Button>
+                  {st === "freeze" ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => doUnfreeze(iso)}
+                      className="justify-start gap-2"
+                    >
+                      <Sun className="h-4 w-4" /> Unfreeze
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!isToday}
+                        onClick={() => markStatus(iso, "present")}
+                        className="justify-start gap-2 text-success hover:bg-success/10 hover:text-success"
+                      >
+                        <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!isToday}
+                        onClick={() => markStatus(iso, "absent")}
+                        className="justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => openFreezeDialog(iso)}
+                        className="justify-start gap-2 text-warning hover:bg-warning/10 hover:text-warning"
+                      >
+                        <Snowflake className="h-4 w-4" /> Freeze…
+                      </Button>
+                    </>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>

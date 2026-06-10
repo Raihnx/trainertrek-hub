@@ -164,6 +164,7 @@ function ClientDetail() {
         totalDays={c.total_days}
         amountPaid={Number(c.amount_paid)}
         packageAmount={Number(c.package_amount)}
+        expiryDate={c.expiry_date}
       />
 
       {/* Analytics */}
