@@ -41,7 +41,8 @@ export function TrainerAvailability() {
     | { trainerName: string; hour: number; clients: typeof clients }
     | null
   >(null);
-  const { isAdmin } = useIsAdmin();
+  const { data: role } = useUserRole();
+  const canManageSlots = role === "admin" || role === "receptionist";
   const qc = useQueryClient();
   const [removingId, setRemovingId] = useState<string | null>(null);
 
