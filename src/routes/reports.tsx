@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useClients } from "@/lib/queries";
 import { useCan } from "@/lib/permissions";
 import { downloadCSV } from "@/lib/csv";
+import { downloadPDFReport, type PdfColumn } from "@/lib/pdf";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
