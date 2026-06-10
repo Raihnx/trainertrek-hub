@@ -47,6 +47,7 @@ export function AttendanceCalendarLive({
   const { data: att = [] } = useAttendance(monthISO, clientId);
   const mark = useMarkAttendance();
   const freezeRange = useFreezeRange();
+  const { allowed: canMark } = useCan("attendance.mark");
 
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeDays, setFreezeDays] = useState(1);
