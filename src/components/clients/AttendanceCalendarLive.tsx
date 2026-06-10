@@ -161,31 +161,31 @@ export function AttendanceCalendarLive({
   };
 
   return (
-    <div className="glass rounded-2xl p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" disabled={!canPrev} onClick={() => shift(-1)} className="h-7 w-7">
-            <ChevronLeft className="h-4 w-4" />
+    <div className="glass rounded-2xl p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Button size="icon" variant="ghost" disabled={!canPrev} onClick={() => shift(-1)} className="h-9 w-9">
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h3 className="font-display text-sm font-semibold min-w-[140px] text-center">{monthName}</h3>
-          <Button size="icon" variant="ghost" disabled={!canNext} onClick={() => shift(1)} className="h-7 w-7">
-            <ChevronRight className="h-4 w-4" />
+          <h3 className="font-display text-lg font-semibold min-w-[180px] text-center">{monthName}</h3>
+          <Button size="icon" variant="ghost" disabled={!canNext} onClick={() => shift(1)} className="h-9 w-9">
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           {legend.map((l) => (
-            <span key={l.label} className="inline-flex items-center gap-1">
-              <span className={cn("h-1.5 w-1.5 rounded-full", l.cls)} />
+            <span key={l.label} className="inline-flex items-center gap-1.5">
+              <span className={cn("h-2.5 w-2.5 rounded-full", l.cls)} />
               {l.label}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[9px] uppercase tracking-wider text-muted-foreground">
-        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-0.5">{d}</div>)}
+      <div className="grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-wider text-muted-foreground">
+        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-1">{d}</div>)}
       </div>
-      <div className="mt-0.5 grid grid-cols-7 gap-1 max-w-sm">
+      <div className="mt-1 grid grid-cols-7 gap-2">
         {Array.from({ length: firstDow }).map((_, i) => <div key={`p${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const date = new Date(year, month, day);
