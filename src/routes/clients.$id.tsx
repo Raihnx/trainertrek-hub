@@ -51,7 +51,27 @@ function ClientDetail() {
   if (!c) throw notFound();
 
   const balance = c.balance;
-  const eligibleDays = eligibleDaysFor(c.total_days, Number(c.amount_paid), Number(c.package_amount));
+  const basePaidDays = eligibleDaysFor(c.total_days, Number(c.amount_paid), Number(c.package_amount));
+  const joinD = new Date(c.joining_date);
+  joinD.setHours(0, 0, 0, 0);
+  // Each frozen day extends membership by 1. If the freeze falls within the
+  // paid window, paid (eligible) days +1; if within the unpaid window, unpaid +1.
+  let freezesInPaid = 0;
+  let freezesInUnpaid = 0;
+  for (const iso of allFreezes) {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    const offset = Math.floor((d.getTime() - joinD.getTime()) / 86400000);
+    if (offset < 0) continue;
+    if (offset < basePaidDays + freezesInPaid) freezesInPaid++;
+    else if (offset < c.total_days + freezesInPaid + freezesInUnpaid) freezesInUnpaid++;
+  }
+  const eligibleDays = basePaidDays + freezesInPaid;
+  const totalDays = c.total_days + freezesInPaid + freezesInUnpaid;
+  const extendedExpiry = new Date(c.expiry_date);
+  extendedExpiry.setDate(extendedExpiry.getDate() + freezesInPaid + freezesInUnpaid);
+  const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+  const displayDaysLeft = Math.max(0, Math.ceil((extendedExpiry.getTime() - todayMid.getTime()) / 86400000));
   const incentive = incentiveFor(counts.present);
 
   const pieData = [
