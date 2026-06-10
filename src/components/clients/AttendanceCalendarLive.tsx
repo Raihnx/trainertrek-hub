@@ -168,12 +168,13 @@ export function AttendanceCalendarLive({
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
             >
-              {day}
+              {!st && shade === "pending" ? (
+                <span className="text-destructive">{day}</span>
+              ) : (
+                day
+              )}
               {st === "freeze" && (
                 <Snowflake className="absolute right-0.5 top-0.5 h-2.5 w-2.5 text-warning" />
-              )}
-              {!st && shade === "pending" && (
-                <span className="absolute right-0.5 top-0 text-[10px] font-bold leading-none text-destructive">!</span>
               )}
             </button>
           );
