@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { logAudit } from "@/lib/audit";
 import { clientStatus } from "@/lib/incentive";
+import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability";
 
 export const Route = createFileRoute("/trainers-overview")({
   head: () => ({
