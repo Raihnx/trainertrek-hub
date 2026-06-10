@@ -35,6 +35,8 @@ export const Route = createFileRoute("/staff")({
 
 function StaffPage() {
   const { isAdmin, isLoading: roleLoading } = useIsAdmin();
+  const { isPrimaryAdmin, isSecondaryAdmin } = useIsPrimaryAdmin();
+  const canEdit = isPrimaryAdmin;
   const month = useAppStore((s) => s.month);
   const { data: staff = [], isLoading } = useStaff();
   const { data: org } = useAdminOrgMetrics(month);
