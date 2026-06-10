@@ -224,6 +224,23 @@ export function useAttendance(monthISO: string, clientId?: string) {
   });
 }
 
+export function useAllFreezes(clientId?: string) {
+  return useQuery({
+    queryKey: ["attendance-freezes", clientId ?? "none"],
+    enabled: !!clientId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("date")
+        .eq("client_id", clientId!)
+        .eq("status", "freeze")
+        .order("date");
+      if (error) throw error;
+      return (data ?? []).map((r) => r.date as string);
+    },
+  });
+}
+
 export function useMarkAttendance() {
   const qc = useQueryClient();
   return useMutation({
