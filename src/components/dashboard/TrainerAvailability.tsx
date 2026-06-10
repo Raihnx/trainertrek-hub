@@ -41,6 +41,31 @@ export function TrainerAvailability() {
     | { trainerName: string; hour: number; clients: typeof clients }
     | null
   >(null);
+  const { isAdmin } = useIsAdmin();
+  const qc = useQueryClient();
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const freeSlot = async (clientId: string, clientName: string) => {
+    setRemovingId(clientId);
+    try {
+      const { error } = await supabase.from("clients").update({ preferred_hour: null } as any).eq("id", clientId);
+      if (error) throw error;
+      await logAudit({
+        action: "client.unassign_slot",
+        target_type: "client",
+        target_id: clientId,
+        target_label: clientName,
+        description: `Freed trainer slot for ${clientName}`,
+      });
+      toast.success(`Freed slot for ${clientName}`);
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      setPicked((p) => (p ? { ...p, clients: p.clients.filter((c) => c.id !== clientId) } : p));
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to free slot");
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
