@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { toast } from "sonner";
 import { useCan } from "@/lib/permissions";
 
@@ -105,41 +105,31 @@ function ClientDetail() {
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
-          {canRecordPayment ? (
-            <Dialog open={payOpen} onOpenChange={setPayOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
-                  <Plus className="mr-1.5 h-4 w-4" /> Record payment
+          <Dialog open={payOpen} onOpenChange={(o) => canRecordPayment && setPayOpen(o)}>
+            <DialogTrigger asChild>
+              <Button
+                disabled={!canRecordPayment}
+                className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] disabled:opacity-60"
+                title={canRecordPayment ? "Record a payment" : "Permission denied — contact admin"}
+              >
+                {canRecordPayment ? <Plus className="mr-1.5 h-4 w-4" /> : <Lock className="mr-1.5 h-4 w-4" />}
+                Record payment
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="text-xs text-muted-foreground">Current balance: ₹{balance.toLocaleString("en-IN")}</div>
+                <Label>Amount (₹)</Label>
+                <Input type="number" min={1} value={payAmount} onChange={(e) => setPayAmount(Number(e.target.value))} />
+              </div>
+              <DialogFooter>
+                <Button onClick={recordPayment} disabled={update.isPending || payAmount <= 0}>
+                  {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-sm">
-                <DialogHeader><DialogTitle>Record payment</DialogTitle></DialogHeader>
-                <div className="space-y-3">
-                  <div className="text-xs text-muted-foreground">Current balance: ₹{balance.toLocaleString("en-IN")}</div>
-                  <Label>Amount (₹)</Label>
-                  <Input type="number" min={1} value={payAmount} onChange={(e) => setPayAmount(Number(e.target.value))} />
-                </div>
-                <DialogFooter>
-                  <Button onClick={recordPayment} disabled={update.isPending || payAmount <= 0}>
-                    {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <Button disabled className="cursor-not-allowed opacity-60">
-                    <Lock className="mr-1.5 h-4 w-4" /> Record payment
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p className="text-xs">Permission denied — contact admin</p>
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-          )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
