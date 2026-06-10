@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, UserCog } from "lucide-react";
+import { Loader2, UserCog, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { logAudit } from "@/lib/audit";
 import { toast } from "sonner";
+import { useCan } from "@/lib/permissions";
 import type { ClientWithDerived } from "@/lib/queries";
 
 type Trainer = { id: string; display_name: string | null; email: string | null; role: string };
