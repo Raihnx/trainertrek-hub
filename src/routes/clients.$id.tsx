@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Wallet, Activity, Phone, Plus, Loader2, Lock } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Bar, BarChart, CartesianGrid, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useState, useMemo } from "react";
-import { useClient, useAttendance, useUpdateClient } from "@/lib/queries";
+import { useClient, useAttendance, useUpdateClient, useAllFreezes } from "@/lib/queries";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { AttendanceCalendarLive } from "@/components/clients/AttendanceCalendarLive";
 import { incentiveFor, eligibleDaysFor, currentMonthISO } from "@/lib/incentive";
