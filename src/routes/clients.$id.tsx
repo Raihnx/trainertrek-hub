@@ -167,8 +167,8 @@ function ClientDetail() {
             { label: "Amount Paid",    value: `₹${Number(c.amount_paid).toLocaleString("en-IN")}`, accent: "text-success" },
             { label: "Remaining",      value: `₹${balance.toLocaleString("en-IN")}`, accent: balance > 0 ? "text-warning" : "text-muted-foreground" },
             { label: "Eligible Days",  value: `${eligibleDays}` },
-            { label: "Total Days",     value: `${c.total_days}` },
-            { label: "Days Left",      value: `${c.days_left}` },
+            { label: "Total Days",     value: `${totalDays}` },
+            { label: "Days Left",      value: `${displayDaysLeft}` },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-border bg-muted/20 p-3">
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{s.label}</div>
