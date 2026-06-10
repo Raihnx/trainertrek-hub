@@ -103,9 +103,14 @@ export function AssignTrainerDialog({
               </select>
             )}
           </div>
+          {!canAssign && (
+            <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/5 p-2 text-xs text-warning">
+              <Lock className="h-3.5 w-3.5" /> You don't have permission to reassign trainers.
+            </div>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={saving || !trainerId}>
+            <Button type="submit" disabled={saving || !trainerId || !canAssign}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save
             </Button>
           </DialogFooter>
