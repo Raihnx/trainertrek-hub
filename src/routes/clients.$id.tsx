@@ -123,7 +123,7 @@ function ClientDetail() {
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
               {c.phone && <span><Phone className="mr-1 inline h-3.5 w-3.5" />{c.phone}</span>}
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Joined {new Date(c.joining_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-              <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+              <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {extendedExpiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
           <Dialog open={payOpen} onOpenChange={(o) => canRecordPayment && setPayOpen(o)}>
