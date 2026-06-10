@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
 import { TRAINING_HOURS, formatHour } from "@/lib/time-slots";
-import { useIsAdmin } from "@/lib/useRole";
+import { useUserRole } from "@/lib/useRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { logAudit } from "@/lib/audit";
@@ -41,7 +41,8 @@ export function TrainerAvailability() {
     | { trainerName: string; hour: number; clients: typeof clients }
     | null
   >(null);
-  const { isAdmin } = useIsAdmin();
+  const { data: role } = useUserRole();
+  const canManageSlots = role === "admin" || role === "receptionist";
   const qc = useQueryClient();
   const [removingId, setRemovingId] = useState<string | null>(null);
 
@@ -215,7 +216,7 @@ export function TrainerAvailability() {
                     {c.package_name && <span>· {c.package_name}</span>}
                   </div>
                 </Link>
-                {isAdmin && (
+                {canManageSlots && (
                   <button
                     type="button"
                     onClick={() => freeSlot(c.id, c.name)}
