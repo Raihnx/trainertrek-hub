@@ -47,11 +47,15 @@ export function AttendanceCalendarLive({
 
   const joinD = new Date(joiningDate);
   joinD.setHours(0, 0, 0, 0);
-  const expiryD = expiryDate ? new Date(expiryDate) : new Date(today);
-  expiryD.setHours(0, 0, 0, 0);
+  const { data: allFreezeISOs = [] } = useAllFreezes(clientId);
+  const baseExpiry = expiryDate ? new Date(expiryDate) : new Date(today);
+  baseExpiry.setHours(0, 0, 0, 0);
+  // Extend visible range by freeze count (each freeze extends expiry by 1 day)
+  const extendedExpiry = new Date(baseExpiry);
+  extendedExpiry.setDate(extendedExpiry.getDate() + allFreezeISOs.length);
 
   const minMonth = { y: joinD.getFullYear(), m: joinD.getMonth() };
-  const maxMonth = { y: expiryD.getFullYear(), m: expiryD.getMonth() };
+  const maxMonth = { y: extendedExpiry.getFullYear(), m: extendedExpiry.getMonth() };
   const todayMonth = { y: today.getFullYear(), m: today.getMonth() };
   // clamp initial to today within bounds
   const clampedInit = (() => {
