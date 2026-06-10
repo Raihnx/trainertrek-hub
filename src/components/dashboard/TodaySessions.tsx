@@ -1,12 +1,14 @@
-import { Check, X, Snowflake } from "lucide-react";
+import { Check, X, Snowflake, Lock } from "lucide-react";
 import { useDashboardStats, useMarkAttendance } from "@/lib/queries";
 import { useAppStore } from "@/lib/app-store";
 import { toast } from "sonner";
+import { useCan } from "@/lib/permissions";
 
 export function TodaySessions() {
   const month = useAppStore((s) => s.month);
   const stats = useDashboardStats(month);
   const mark = useMarkAttendance();
+  const { allowed: canMark } = useCan("attendance.mark");
 
   const onMark = (client_id: string, status: "present" | "absent" | "freeze") => {
     mark.mutate(
