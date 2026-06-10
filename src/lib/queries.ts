@@ -262,7 +262,7 @@ export function useMarkAttendance() {
         metadata: { status: input.status, date },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 
@@ -296,7 +296,7 @@ export function useFreezeRange() {
         metadata: { startDate: input.startDate, days: input.days },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 
@@ -320,7 +320,7 @@ export function useUnfreezeAttendance() {
         metadata: { date: input.date },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 
