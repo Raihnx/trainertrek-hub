@@ -213,9 +213,9 @@ export function AttendanceCalendarLive({
             <button
               disabled={isPast && !st}
               className={cn(
-                "relative aspect-square w-full rounded-md border text-[10px] font-medium transition",
+                "relative aspect-square w-full rounded-lg border text-sm font-medium transition",
                 st ? colorMap[status] : (baseShade || colorMap[status]),
-                isToday && "ring-1 ring-primary ring-offset-1 ring-offset-background",
+                isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
             >
@@ -225,7 +225,7 @@ export function AttendanceCalendarLive({
                 day
               )}
               {st === "freeze" && (
-                <Snowflake className="absolute right-0 top-0 h-2 w-2 text-warning" />
+                <Snowflake className="absolute right-1 top-1 h-3.5 w-3.5 text-warning" />
               )}
             </button>
           );
@@ -241,11 +241,11 @@ export function AttendanceCalendarLive({
           return (
             <Popover key={day}>
               <PopoverTrigger asChild>{cellBtn}</PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="center">
-                <div className="px-1 pb-2 text-[11px] text-muted-foreground">
+              <PopoverContent className="w-56 p-3" align="center">
+                <div className="px-1 pb-2 text-sm text-muted-foreground">
                   {date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                   {st === "freeze" ? (
                     <Button
                       size="sm"
@@ -264,7 +264,7 @@ export function AttendanceCalendarLive({
                         onClick={() => markStatus(iso, "present")}
                         className="justify-start gap-2 text-success hover:bg-success/10 hover:text-success"
                       >
-                        <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                        <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-xs text-muted-foreground">today only</span>}
                       </Button>
                       <Button
                         size="sm"
@@ -273,7 +273,7 @@ export function AttendanceCalendarLive({
                         onClick={() => markStatus(iso, "absent")}
                         className="justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
-                        <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                        <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-xs text-muted-foreground">today only</span>}
                       </Button>
                       <Button
                         size="sm"
