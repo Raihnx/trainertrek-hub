@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Check, X, Snowflake, Loader2 } from "lucide-react";
+import { Check, X, Snowflake, Loader2, Lock } from "lucide-react";
+import { useCan } from "@/lib/permissions";
 
 type AttStatus = "present" | "absent" | "freeze" | "future" | "none";
 
