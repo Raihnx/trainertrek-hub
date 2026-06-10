@@ -95,8 +95,8 @@ export function TrainerAvailability() {
           </thead>
           <tbody>
             {trainerOnly.map((t) => {
-              const inner = busy.get(t.id) ?? new Map<number, number>();
-              const busyCount = TRAINING_HOURS.filter((h) => (inner.get(h) ?? 0) > 0).length;
+              const inner = busy.get(t.id) ?? new Map<number, typeof clients>();
+              const busyCount = TRAINING_HOURS.filter((h) => (inner.get(h)?.length ?? 0) > 0).length;
               const freeCount = totalSlots - busyCount;
               const name = t.display_name || t.email || "Trainer";
               return (
@@ -117,7 +117,8 @@ export function TrainerAvailability() {
                     </Link>
                   </td>
                   {TRAINING_HOURS.map((h) => {
-                    const count = inner.get(h) ?? 0;
+                    const list = inner.get(h) ?? [];
+                    const count = list.length;
                     const cls =
                       count === 0
                         ? "bg-success/15 border-success/30 text-success/80"
@@ -126,12 +127,15 @@ export function TrainerAvailability() {
                           : "bg-destructive/30 border-destructive/50 text-destructive";
                     return (
                       <td key={h} className="px-0.5 py-0.5">
-                        <div
+                        <button
+                          type="button"
+                          disabled={count === 0}
+                          onClick={() => setPicked({ trainerName: name, hour: h, clients: list })}
                           title={`${name} · ${formatHour(h)}–${formatHour(h + 1)} · ${count === 0 ? "Free" : count + " booked"}`}
-                          className={`flex h-7 items-center justify-center rounded border text-[10px] font-semibold tabular-nums ${cls}`}
+                          className={`flex h-7 w-full items-center justify-center rounded border text-[10px] font-semibold tabular-nums ${cls} ${count > 0 ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
                         >
                           {count === 0 ? "" : count}
-                        </div>
+                        </button>
                       </td>
                     );
                   })}
