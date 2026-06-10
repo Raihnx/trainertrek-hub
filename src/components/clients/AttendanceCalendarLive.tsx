@@ -199,10 +199,8 @@ export function AttendanceCalendarLive({
           const dayOffset = Math.floor((date.getTime() - joinD.getTime()) / 86400000);
           let shade: "paid" | "pending" | null = null;
           if (dayOffset >= 0) {
-            const freezesBefore = freezeISOs.filter((d) => d < iso && new Date(d) >= joinD).length;
-            const effective = dayOffset - freezesBefore;
-            if (effective < paidDays) shade = "paid";
-            else if (effective < totalDays) shade = "pending";
+            if (dayOffset < extPaidDays) shade = "paid";
+            else if (dayOffset < extTotalDays) shade = "pending";
           }
 
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
