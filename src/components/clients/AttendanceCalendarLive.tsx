@@ -186,7 +186,6 @@ export function AttendanceCalendarLive({
             return <div key={day}>{cellBtn}</div>;
           }
 
-          return (
           if (!canMark) {
             return <div key={day}>{cellBtn}</div>;
           }
