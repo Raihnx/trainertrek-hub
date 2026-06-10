@@ -151,6 +151,43 @@ export function TrainerAvailability() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!picked} onOpenChange={(v) => !v && setPicked(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {picked?.trainerName} · {picked && formatHour(picked.hour)}–{picked && formatHour(picked.hour + 1)}
+            </DialogTitle>
+            <DialogDescription>
+              {picked?.clients.length} client{(picked?.clients.length ?? 0) === 1 ? "" : "s"} booked this hour
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+            {picked?.clients.map((c) => (
+              <Link
+                key={c.id}
+                to="/clients/$id"
+                params={{ id: c.id }}
+                onClick={() => setPicked(null)}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/10 p-3 hover:border-primary/40 hover:bg-muted/20"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{c.name}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {c.phone && (
+                      <span className="inline-flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {c.phone}
+                      </span>
+                    )}
+                    {c.package_name && <span>· {c.package_name}</span>}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
