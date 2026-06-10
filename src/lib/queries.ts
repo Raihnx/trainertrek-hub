@@ -224,6 +224,23 @@ export function useAttendance(monthISO: string, clientId?: string) {
   });
 }
 
+export function useAllFreezes(clientId?: string) {
+  return useQuery({
+    queryKey: ["attendance-freezes", clientId ?? "none"],
+    enabled: !!clientId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("date")
+        .eq("client_id", clientId!)
+        .eq("status", "freeze")
+        .order("date");
+      if (error) throw error;
+      return (data ?? []).map((r) => r.date as string);
+    },
+  });
+}
+
 export function useMarkAttendance() {
   const qc = useQueryClient();
   return useMutation({
@@ -245,7 +262,7 @@ export function useMarkAttendance() {
         metadata: { status: input.status, date },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 
@@ -279,7 +296,7 @@ export function useFreezeRange() {
         metadata: { startDate: input.startDate, days: input.days },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 
@@ -303,7 +320,7 @@ export function useUnfreezeAttendance() {
         metadata: { date: input.date },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: ["attendance"] }), qc.invalidateQueries({ queryKey: ["attendance-freezes"] })),
   });
 }
 

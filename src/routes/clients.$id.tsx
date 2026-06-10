@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Wallet, Activity, Phone, Plus, Loader2, Lock } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Bar, BarChart, CartesianGrid, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useState, useMemo } from "react";
-import { useClient, useAttendance, useUpdateClient } from "@/lib/queries";
+import { useClient, useAttendance, useUpdateClient, useAllFreezes } from "@/lib/queries";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { AttendanceCalendarLive } from "@/components/clients/AttendanceCalendarLive";
 import { incentiveFor, eligibleDaysFor, currentMonthISO } from "@/lib/incentive";
@@ -31,6 +31,7 @@ function ClientDetail() {
   const { data: c, isLoading } = useClient(id);
   const month = currentMonthISO();
   const { data: att = [] } = useAttendance(month, id);
+  const { data: allFreezes = [] } = useAllFreezes(id);
   const update = useUpdateClient();
   const { allowed: canRecordPayment } = useCan("payments.create");
   const [payOpen, setPayOpen] = useState(false);
@@ -50,7 +51,27 @@ function ClientDetail() {
   if (!c) throw notFound();
 
   const balance = c.balance;
-  const eligibleDays = eligibleDaysFor(c.total_days, Number(c.amount_paid), Number(c.package_amount));
+  const basePaidDays = eligibleDaysFor(c.total_days, Number(c.amount_paid), Number(c.package_amount));
+  const joinD = new Date(c.joining_date);
+  joinD.setHours(0, 0, 0, 0);
+  // Each frozen day extends membership by 1. If the freeze falls within the
+  // paid window, paid (eligible) days +1; if within the unpaid window, unpaid +1.
+  let freezesInPaid = 0;
+  let freezesInUnpaid = 0;
+  for (const iso of allFreezes) {
+    const d = new Date(iso);
+    d.setHours(0, 0, 0, 0);
+    const offset = Math.floor((d.getTime() - joinD.getTime()) / 86400000);
+    if (offset < 0) continue;
+    if (offset < basePaidDays + freezesInPaid) freezesInPaid++;
+    else if (offset < c.total_days + freezesInPaid + freezesInUnpaid) freezesInUnpaid++;
+  }
+  const eligibleDays = basePaidDays + freezesInPaid;
+  const totalDays = c.total_days + freezesInPaid + freezesInUnpaid;
+  const extendedExpiry = new Date(c.expiry_date);
+  extendedExpiry.setDate(extendedExpiry.getDate() + freezesInPaid + freezesInUnpaid);
+  const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+  const displayDaysLeft = Math.max(0, Math.ceil((extendedExpiry.getTime() - todayMid.getTime()) / 86400000));
   const incentive = incentiveFor(counts.present);
 
   const pieData = [
@@ -102,7 +123,7 @@ function ClientDetail() {
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
               {c.phone && <span><Phone className="mr-1 inline h-3.5 w-3.5" />{c.phone}</span>}
               <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Joined {new Date(c.joining_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-              <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {new Date(c.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+              <span><Calendar className="mr-1 inline h-3.5 w-3.5" />Expires {extendedExpiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </div>
           </div>
           <Dialog open={payOpen} onOpenChange={(o) => canRecordPayment && setPayOpen(o)}>
@@ -146,8 +167,8 @@ function ClientDetail() {
             { label: "Amount Paid",    value: `₹${Number(c.amount_paid).toLocaleString("en-IN")}`, accent: "text-success" },
             { label: "Remaining",      value: `₹${balance.toLocaleString("en-IN")}`, accent: balance > 0 ? "text-warning" : "text-muted-foreground" },
             { label: "Eligible Days",  value: `${eligibleDays}` },
-            { label: "Total Days",     value: `${c.total_days}` },
-            { label: "Days Left",      value: `${c.days_left}` },
+            { label: "Total Days",     value: `${totalDays}` },
+            { label: "Days Left",      value: `${displayDaysLeft}` },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-border bg-muted/20 p-3">
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{s.label}</div>

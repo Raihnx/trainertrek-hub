@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAttendance, useMarkAttendance, useFreezeRange, useUnfreezeAttendance } from "@/lib/queries";
+import { useAttendance, useMarkAttendance, useFreezeRange, useUnfreezeAttendance, useAllFreezes } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -47,11 +47,15 @@ export function AttendanceCalendarLive({
 
   const joinD = new Date(joiningDate);
   joinD.setHours(0, 0, 0, 0);
-  const expiryD = expiryDate ? new Date(expiryDate) : new Date(today);
-  expiryD.setHours(0, 0, 0, 0);
+  const { data: allFreezeISOs = [] } = useAllFreezes(clientId);
+  const baseExpiry = expiryDate ? new Date(expiryDate) : new Date(today);
+  baseExpiry.setHours(0, 0, 0, 0);
+  // Extend visible range by freeze count (each freeze extends expiry by 1 day)
+  const extendedExpiry = new Date(baseExpiry);
+  extendedExpiry.setDate(extendedExpiry.getDate() + allFreezeISOs.length);
 
   const minMonth = { y: joinD.getFullYear(), m: joinD.getMonth() };
-  const maxMonth = { y: expiryD.getFullYear(), m: expiryD.getMonth() };
+  const maxMonth = { y: extendedExpiry.getFullYear(), m: extendedExpiry.getMonth() };
   const todayMonth = { y: today.getFullYear(), m: today.getMonth() };
   // clamp initial to today within bounds
   const clampedInit = (() => {
@@ -86,11 +90,21 @@ export function AttendanceCalendarLive({
   const firstDow = new Date(year, month, 1).getDay();
   const monthName = new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-  const paidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
-  const freezeISOs = useMemo(
-    () => Array.from(attMap.entries()).filter(([, s]) => s === "freeze").map(([d]) => d).sort(),
-    [attMap],
-  );
+  const basePaidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
+  // Compute extended windows including all freezes (each freeze in paid window
+  // pushes the paid boundary by 1; each freeze in unpaid pushes total by 1).
+  const { extPaidDays, extTotalDays } = useMemo(() => {
+    let fp = 0, fu = 0;
+    const sorted = [...allFreezeISOs].sort();
+    for (const iso of sorted) {
+      const d = new Date(iso); d.setHours(0, 0, 0, 0);
+      const off = Math.floor((d.getTime() - joinD.getTime()) / 86400000);
+      if (off < 0) continue;
+      if (off < basePaidDays + fp) fp++;
+      else if (off < totalDays + fp + fu) fu++;
+    }
+    return { extPaidDays: basePaidDays + fp, extTotalDays: totalDays + fp + fu };
+  }, [allFreezeISOs, basePaidDays, totalDays, joinD]);
 
   const isoOf = (day: number) =>
     `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -185,10 +199,8 @@ export function AttendanceCalendarLive({
           const dayOffset = Math.floor((date.getTime() - joinD.getTime()) / 86400000);
           let shade: "paid" | "pending" | null = null;
           if (dayOffset >= 0) {
-            const freezesBefore = freezeISOs.filter((d) => d < iso && new Date(d) >= joinD).length;
-            const effective = dayOffset - freezesBefore;
-            if (effective < paidDays) shade = "paid";
-            else if (effective < totalDays) shade = "pending";
+            if (dayOffset < extPaidDays) shade = "paid";
+            else if (dayOffset < extTotalDays) shade = "pending";
           }
 
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
