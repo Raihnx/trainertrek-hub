@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useCan } from "@/lib/permissions";
 
 export const Route = createFileRoute("/clients/$id")({
-  head: () => ({ meta: [{ title: "Client — ForgeFit" }, { name: "description", content: "Membership and attendance details." }] }),
+  head: () => ({ meta: [{ title: "Client — ZAK's GYM" }, { name: "description", content: "Membership and attendance details." }] }),
   component: ClientDetail,
   notFoundComponent: () => (
     <div className="py-20 text-center">

@@ -8,7 +8,7 @@ import { useAppStore } from "@/lib/app-store";
 import { appStore } from "@/lib/app-store";
 
 export const Route = createFileRoute("/clients")({
-  head: () => ({ meta: [{ title: "My Clients — ForgeFit" }, { name: "description", content: "Manage your assigned personal training clients." }] }),
+  head: () => ({ meta: [{ title: "My Clients — ZAK's GYM" }, { name: "description", content: "Manage your assigned personal training clients." }] }),
   component: ClientsPage,
 });
 

@@ -29,7 +29,7 @@ import {
 
 
 export const Route = createFileRoute("/staff")({
-  head: () => ({ meta: [{ title: "Staff — ForgeFit" }, { name: "description", content: "Manage trainers and receptionists." }] }),
+  head: () => ({ meta: [{ title: "Staff — ZAK's GYM" }, { name: "description", content: "Manage trainers and receptionists." }] }),
   component: StaffPage,
 });
 

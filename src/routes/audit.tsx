@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/audit")({
   head: () => ({
     meta: [
-      { title: "Audit log — ForgeFit" },
+      { title: "Audit log — ZAK's GYM" },
       { name: "description", content: "Trail of admin actions across the gym." },
     ],
   }),

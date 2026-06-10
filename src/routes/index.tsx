@@ -18,7 +18,7 @@ import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability"
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — ForgeFit Trainer" },
+      { title: "Dashboard — ZAK's GYM Trainer" },
       { name: "description", content: "Trainer overview: clients, sessions, incentives and memberships at a glance." },
     ],
   }),

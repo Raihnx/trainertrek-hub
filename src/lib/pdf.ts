@@ -13,7 +13,7 @@ export type PdfReportOptions = {
   summary?: { label: string; value: string }[];
 };
 
-const BRAND = "FORGEFIT";
+const BRAND = "ZAK´S GYM";
 const PRIMARY: [number, number, number] = [16, 24, 40];
 const ACCENT: [number, number, number] = [212, 175, 55]; // gold
 
