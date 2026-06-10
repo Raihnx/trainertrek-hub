@@ -81,7 +81,7 @@ function AuthPage() {
             <Dumbbell className="h-6 w-6" />
           </div>
           <div>
-            <div className="font-display text-2xl font-bold">ZAK<span className="text-gradient-gold">FORGE<span className="text-gradient-gold">FIT</span>#39;S GYM</span></div>
+            <div className="font-display text-2xl font-bold">ZAK<span className="text-gradient-gold">'S GYM</span></div>
             <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Trainer OS</div>
           </div>
         </div>

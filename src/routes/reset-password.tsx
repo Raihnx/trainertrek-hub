@@ -46,7 +46,7 @@ function ResetPasswordPage() {
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-primary to-amber-500 text-primary-foreground shadow-lg">
             <Dumbbell className="h-6 w-6" />
           </div>
-          <div className="font-display text-2xl font-bold">ZAK<span className="text-gradient-gold">FORGE<span className="text-gradient-gold">FIT</span>#39;S GYM</span></div>
+          <div className="font-display text-2xl font-bold">ZAK<span className="text-gradient-gold">'S GYM</span></div>
         </div>
 
         <div className="glass w-full rounded-2xl border border-border/60 p-7 shadow-2xl">

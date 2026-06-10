@@ -96,7 +96,7 @@ export function SidebarHeader() {
         <Dumbbell className="h-5 w-5 text-primary-foreground" />
       </div>
       <div className="leading-tight">
-        <div className="font-display text-base font-semibold tracking-tight">ZAK<span className="text-gradient-gold">FORGE<span className="text-gradient-gold">FIT</span>#39;S GYM</span></div>
+        <div className="font-display text-base font-semibold tracking-tight">ZAK<span className="text-gradient-gold">'S GYM</span></div>
         <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {role === "receptionist" ? "Reception" : isAdmin ? "Admin" : "Trainer OS"}
         </div>
