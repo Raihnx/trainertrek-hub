@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useClients } from "@/lib/queries";
 import { useCan } from "@/lib/permissions";
 import { downloadCSV } from "@/lib/csv";
+import { downloadPDFReport, type PdfColumn } from "@/lib/pdf";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,6 +129,138 @@ function ReportsPage() {
 
   const totalCollected = (payments as any[]).reduce((s, p) => s + Number(p.amount), 0);
 
+  const exportClientsPDF = () => {
+    if (!canExport.allowed) return toast.error("You don't have export permission");
+    const cols: PdfColumn[] = [
+      { header: "Client", key: "name" },
+      { header: "Phone", key: "phone" },
+      { header: "Package", key: "package" },
+      { header: "Joined", key: "joining_date" },
+      { header: "Expiry", key: "expiry_date" },
+      { header: "Days", key: "total_days", align: "right" },
+      { header: "Status", key: "status" },
+    ];
+    const rows = clients.map((c) => ({
+      name: c.name,
+      phone: c.phone ?? "—",
+      package: c.package_name ?? "—",
+      joining_date: c.joining_date,
+      expiry_date: c.expiry_date,
+      total_days: c.total_days,
+      status: c.status,
+    }));
+    downloadPDFReport({
+      filename: `client-roster-${month}.pdf`,
+      title: "Client Roster",
+      subtitle: `Active membership snapshot · ${monthLabel}`,
+      columns: cols,
+      rows,
+      summary: [
+        { label: "Total clients", value: String(clients.length) },
+        { label: "Expiring", value: String(expiring.length) },
+        { label: "Expired", value: String(expired.length) },
+      ],
+    });
+    toast.success("PDF downloaded");
+  };
+
+  const exportExpiringPDF = () => {
+    if (!canExport.allowed) return toast.error("You don't have export permission");
+    const cols: PdfColumn[] = [
+      { header: "Client", key: "name" },
+      { header: "Phone", key: "phone" },
+      { header: "Package", key: "package" },
+      { header: "Expiry", key: "expiry_date" },
+      { header: "Days left", key: "days_left", align: "right" },
+      { header: "Status", key: "status" },
+    ];
+    const rows = [...expiring, ...expired].map((c) => ({
+      name: c.name,
+      phone: c.phone ?? "—",
+      package: c.package_name ?? "—",
+      expiry_date: c.expiry_date,
+      days_left: c.days_left,
+      status: c.status,
+    }));
+    downloadPDFReport({
+      filename: `expiring-memberships-${month}.pdf`,
+      title: "Expiring Memberships",
+      subtitle: `Renewal pipeline · ${monthLabel}`,
+      columns: cols,
+      rows,
+      summary: [
+        { label: "Expiring soon", value: String(expiring.length) },
+        { label: "Already expired", value: String(expired.length) },
+      ],
+    });
+    toast.success("PDF downloaded");
+  };
+
+  const exportPendingPDF = () => {
+    if (!canExport.allowed) return toast.error("You don't have export permission");
+    const cols: PdfColumn[] = [
+      { header: "Client", key: "name" },
+      { header: "Phone", key: "phone" },
+      { header: "Package", key: "package" },
+      { header: "Amount", key: "package_amount", align: "right" },
+      { header: "Paid", key: "amount_paid", align: "right" },
+      { header: "Balance", key: "balance", align: "right" },
+      { header: "Paid %", key: "paid_pct", align: "right" },
+    ];
+    const rows = pending.map((c) => ({
+      name: c.name,
+      phone: c.phone ?? "—",
+      package: c.package_name ?? "—",
+      package_amount: `₹${Number(c.package_amount).toLocaleString("en-IN")}`,
+      amount_paid: `₹${Number(c.amount_paid).toLocaleString("en-IN")}`,
+      balance: `₹${c.balance.toLocaleString("en-IN")}`,
+      paid_pct: `${c.paid_pct.toFixed(1)}%`,
+    }));
+    const totalBalance = pending.reduce((s, c) => s + c.balance, 0);
+    downloadPDFReport({
+      filename: `pending-payments-${month}.pdf`,
+      title: "Pending Payments",
+      subtitle: `Outstanding balances · ${monthLabel}`,
+      columns: cols,
+      rows,
+      summary: [
+        { label: "Accounts", value: String(pending.length) },
+        { label: "Total due", value: `₹${totalBalance.toLocaleString("en-IN")}` },
+      ],
+    });
+    toast.success("PDF downloaded");
+  };
+
+  const exportPaymentsPDF = () => {
+    if (!canExport.allowed) return toast.error("You don't have export permission");
+    const cols: PdfColumn[] = [
+      { header: "Date", key: "paid_at" },
+      { header: "Client", key: "client" },
+      { header: "Method", key: "method" },
+      { header: "Note", key: "note" },
+      { header: "Amount", key: "amount", align: "right" },
+    ];
+    const rows = (payments as any[]).map((p) => ({
+      paid_at: new Date(p.paid_at).toLocaleDateString("en-IN"),
+      client: clientName.get(p.client_id) ?? p.client_id,
+      method: p.method ?? "—",
+      note: p.note ?? "—",
+      amount: `₹${Number(p.amount).toLocaleString("en-IN")}`,
+    }));
+    downloadPDFReport({
+      filename: `payments-${month}.pdf`,
+      title: `Payments Collected`,
+      subtitle: `Receipts journal · ${monthLabel}`,
+      columns: cols,
+      rows,
+      summary: [
+        { label: "Transactions", value: String((payments as any[]).length) },
+        { label: "Total collected", value: `₹${totalCollected.toLocaleString("en-IN")}` },
+      ],
+    });
+    toast.success("PDF downloaded");
+  };
+
   const reports = [
     {
       icon: FileBarChart2,
@@ -135,7 +268,8 @@ function ReportsPage() {
       desc: "Full client list with packages, eligibility and status.",
       count: clients.length,
       accent: "text-primary",
-      onExport: exportClientsAttendance,
+      onExportCSV: exportClientsAttendance,
+      onExportPDF: exportClientsPDF,
     },
     {
       icon: AlertTriangle,
@@ -143,7 +277,8 @@ function ReportsPage() {
       desc: "Memberships expiring soon or already expired.",
       count: expiring.length + expired.length,
       accent: "text-warning",
-      onExport: exportExpiring,
+      onExportCSV: exportExpiring,
+      onExportPDF: exportExpiringPDF,
     },
     {
       icon: Wallet,
@@ -151,7 +286,8 @@ function ReportsPage() {
       desc: "Outstanding balances across clients.",
       count: pending.length,
       accent: "text-destructive",
-      onExport: exportPending,
+      onExportCSV: exportPending,
+      onExportPDF: exportPendingPDF,
     },
     {
       icon: CalendarCheck,
@@ -159,7 +295,8 @@ function ReportsPage() {
       desc: `₹${totalCollected.toLocaleString("en-IN")} collected this month.`,
       count: (payments as any[]).length,
       accent: "text-success",
-      onExport: exportPayments,
+      onExportCSV: exportPayments,
+      onExportPDF: exportPaymentsPDF,
     },
   ];
 
@@ -169,7 +306,7 @@ function ReportsPage() {
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">Reports</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Quick views and CSV exports for <span className="font-semibold text-foreground">{monthLabel}</span>.
+            Quick views, CSV &amp; PDF exports for <span className="font-semibold text-foreground">{monthLabel}</span>.
           </p>
         </div>
         {!canExport.allowed && !canExport.isLoading && (
@@ -190,18 +327,27 @@ function ReportsPage() {
             </div>
             <h3 className="mt-4 font-display text-base font-semibold">{r.title}</h3>
             <p className="mt-1 flex-1 text-sm text-muted-foreground">{r.desc}</p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-4 w-full"
-              disabled={!canExport.allowed || r.count === 0}
-              onClick={r.onExport}
-            >
-              <Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV
-            </Button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!canExport.allowed || r.count === 0}
+                onClick={r.onExportCSV}
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" /> CSV
+              </Button>
+              <Button
+                size="sm"
+                disabled={!canExport.allowed || r.count === 0}
+                onClick={r.onExportPDF}
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" /> PDF
+              </Button>
+            </div>
           </div>
         ))}
       </div>
+
 
       <div className="glass rounded-2xl p-5">
         <h2 className="mb-4 font-display text-lg font-semibold">Pending payments</h2>
