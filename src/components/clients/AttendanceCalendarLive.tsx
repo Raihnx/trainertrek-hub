@@ -24,8 +24,8 @@ const legend = [
   { label: "Present", cls: "bg-success" },
   { label: "Absent",  cls: "bg-destructive" },
   { label: "Freeze",  cls: "bg-warning" },
-  { label: "Paid", cls: "bg-slate-300" },
-  { label: "Unpaid", cls: "bg-slate-300" },
+  { label: "Paid", cls: "bg-slate-500/40 border border-slate-500/60" },
+  { label: "Unpaid", cls: "bg-slate-500/40 border border-slate-500/60" },
 ];
 
 export function AttendanceCalendarLive({
@@ -154,8 +154,8 @@ export function AttendanceCalendarLive({
 
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
           const baseShade =
-            !st && shade === "paid" ? "bg-slate-200/40 border-slate-400/30 text-foreground hover:bg-slate-200/60"
-            : !st && shade === "pending" ? "bg-slate-200/40 border-slate-400/30 text-foreground hover:bg-slate-200/60"
+            !st && shade === "paid" ? "bg-slate-500/20 text-foreground border-slate-500/40 hover:bg-slate-500/30"
+            : !st && shade === "pending" ? "bg-slate-500/20 text-foreground border-slate-500/40 hover:bg-slate-500/30"
             : "";
 
           const cellBtn = (
