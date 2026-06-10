@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Users, Phone } from "lucide-react";
+import { Clock, Users, Phone, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAssignableTrainers } from "@/components/clients/AssignTrainerDialog";
 import { useClients } from "@/lib/queries";
 import { TRAINING_HOURS, formatHour } from "@/lib/time-slots";
+import { useIsAdmin } from "@/lib/useRole";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { logAudit } from "@/lib/audit";
+import { toast } from "sonner";
 
 export function TrainerAvailability() {
   const { data: trainers = [], isLoading } = useAssignableTrainers();
@@ -36,6 +41,31 @@ export function TrainerAvailability() {
     | { trainerName: string; hour: number; clients: typeof clients }
     | null
   >(null);
+  const { isAdmin } = useIsAdmin();
+  const qc = useQueryClient();
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const freeSlot = async (clientId: string, clientName: string) => {
+    setRemovingId(clientId);
+    try {
+      const { error } = await supabase.from("clients").update({ preferred_hour: null } as any).eq("id", clientId);
+      if (error) throw error;
+      await logAudit({
+        action: "client.unassign_slot",
+        target_type: "client",
+        target_id: clientId,
+        target_label: clientName,
+        description: `Freed trainer slot for ${clientName}`,
+      });
+      toast.success(`Freed slot for ${clientName}`);
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      setPicked((p) => (p ? { ...p, clients: p.clients.filter((c) => c.id !== clientId) } : p));
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to free slot");
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -164,14 +194,16 @@ export function TrainerAvailability() {
           </DialogHeader>
           <div className="max-h-[60vh] space-y-2 overflow-y-auto">
             {picked?.clients.map((c) => (
-              <Link
+              <div
                 key={c.id}
-                to="/clients/$id"
-                params={{ id: c.id }}
-                onClick={() => setPicked(null)}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/10 p-3 hover:border-primary/40 hover:bg-muted/20"
+                className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/10 p-3 hover:border-primary/40 hover:bg-muted/20"
               >
-                <div className="min-w-0 flex-1">
+                <Link
+                  to="/clients/$id"
+                  params={{ id: c.id }}
+                  onClick={() => setPicked(null)}
+                  className="min-w-0 flex-1"
+                >
                   <div className="truncate text-sm font-medium">{c.name}</div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {c.phone && (
@@ -182,9 +214,26 @@ export function TrainerAvailability() {
                     )}
                     {c.package_name && <span>· {c.package_name}</span>}
                   </div>
-                </div>
-              </Link>
+                </Link>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => freeSlot(c.id, c.name)}
+                    disabled={removingId === c.id}
+                    title="Free this slot (unassign client from this hour)"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-[11px] font-semibold text-destructive hover:bg-destructive/20 disabled:opacity-60"
+                  >
+                    {removingId === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                    Remove
+                  </button>
+                )}
+              </div>
             ))}
+            {picked && picked.clients.length === 0 && (
+              <p className="rounded-lg border border-dashed border-border/60 py-6 text-center text-xs text-muted-foreground">
+                No clients in this slot.
+              </p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
