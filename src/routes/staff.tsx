@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Users, Shield, UserX, UserCheck, Loader2, Trophy, Wallet, KeyRound, UserPlus, Trash2 } from "lucide-react";
-import { useIsAdmin } from "@/lib/useRole";
+import { useIsAdmin, useIsPrimaryAdmin } from "@/lib/useRole";
 import { useStaff, useSetStaffStatus, useSetStaffRole, useAdminOrgMetrics } from "@/lib/admin-queries";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
