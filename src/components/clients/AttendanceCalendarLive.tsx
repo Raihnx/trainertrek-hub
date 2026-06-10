@@ -134,21 +134,36 @@ export function AttendanceCalendarLive({
         {Array.from({ length: firstDow }).map((_, i) => <div key={`p${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const date = new Date(year, month, day);
+          date.setHours(0, 0, 0, 0);
           const iso = isoOf(day);
           const st = attMap.get(iso);
           const isPast = day < todayDay;
           const isToday = day === todayDay;
           const isFuture = day > todayDay;
-          const inEligible = date >= joinD && date <= eligibleEnd;
+
+          // Compute membership shade with freeze-extension.
+          // Days before this date that are frozen (in current month, within membership) shift the window.
+          const dayOffset = Math.floor((date.getTime() - joinD.getTime()) / 86400000);
+          let shade: "paid" | "pending" | null = null;
+          if (dayOffset >= 0) {
+            const freezesBefore = freezeISOs.filter((d) => d < iso && new Date(d) >= joinD).length;
+            const effective = dayOffset - freezesBefore;
+            if (effective < paidDays) shade = "paid";
+            else if (effective < totalDays) shade = "pending";
+          }
+
           const status: AttStatus = st ?? (isFuture ? "future" : "none");
+          const baseShade =
+            !st && shade === "paid" ? "bg-primary/15 border-primary/30 text-foreground hover:bg-primary/25"
+            : !st && shade === "pending" ? "bg-amber-500/15 border-amber-500/30 text-foreground hover:bg-amber-500/25"
+            : "";
 
           const cellBtn = (
             <button
               disabled={isPast && !st}
               className={cn(
                 "relative aspect-square w-full rounded-lg border text-xs font-medium transition",
-                colorMap[status],
-                inEligible && !st && !isFuture && "bg-primary/10 border-primary/30",
+                st ? colorMap[status] : (baseShade || colorMap[status]),
                 isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
