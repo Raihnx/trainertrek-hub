@@ -65,9 +65,14 @@ export function AttendanceCalendarLive({
   const monthName = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   const joinD = new Date(joiningDate);
-  const eligibleDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
-  const eligibleEnd = new Date(joinD);
-  eligibleEnd.setDate(eligibleEnd.getDate() + eligibleDays - 1);
+  joinD.setHours(0, 0, 0, 0);
+  const paidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
+  // Sorted freeze ISOs from current month for shifting the membership window
+  const freezeISOs = useMemo(
+    () => Array.from(attMap.entries()).filter(([, s]) => s === "freeze").map(([d]) => d).sort(),
+    [attMap],
+  );
+
 
   const isoOf = (day: number) =>
     `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
