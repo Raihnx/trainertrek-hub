@@ -45,15 +45,23 @@ export function TodaySessions() {
                   <div className="truncate text-sm font-medium">{c.name}</div>
                   <div className="truncate text-xs text-muted-foreground">{c.package_name ?? "—"}</div>
                 </div>
-                <button onClick={() => onMark(c.id, "present")} className="rounded-lg bg-success/15 p-2 text-success transition hover:bg-success/25" title="Present">
-                  <Check className="h-4 w-4" />
-                </button>
-                <button onClick={() => onMark(c.id, "absent")} className="rounded-lg bg-destructive/15 p-2 text-destructive transition hover:bg-destructive/25" title="Absent">
-                  <X className="h-4 w-4" />
-                </button>
-                <button onClick={() => onMark(c.id, "freeze")} className="rounded-lg bg-warning/15 p-2 text-warning transition hover:bg-warning/25" title="Freeze">
-                  <Snowflake className="h-4 w-4" />
-                </button>
+                {canMark ? (
+                  <>
+                    <button onClick={() => onMark(c.id, "present")} className="rounded-lg bg-success/15 p-2 text-success transition hover:bg-success/25" title="Present">
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => onMark(c.id, "absent")} className="rounded-lg bg-destructive/15 p-2 text-destructive transition hover:bg-destructive/25" title="Absent">
+                      <X className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => onMark(c.id, "freeze")} className="rounded-lg bg-warning/15 p-2 text-warning transition hover:bg-warning/25" title="Freeze">
+                      <Snowflake className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <span className="flex items-center gap-1 rounded-lg bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground" title="Permission denied — contact admin">
+                    <Lock className="h-3 w-3" /> Read-only
+                  </span>
+                )}
               </li>
             );
           })}
