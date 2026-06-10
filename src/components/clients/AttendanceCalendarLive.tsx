@@ -90,11 +90,21 @@ export function AttendanceCalendarLive({
   const firstDow = new Date(year, month, 1).getDay();
   const monthName = new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-  const paidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
-  const freezeISOs = useMemo(
-    () => Array.from(attMap.entries()).filter(([, s]) => s === "freeze").map(([d]) => d).sort(),
-    [attMap],
-  );
+  const basePaidDays = eligibleDaysFor(totalDays, amountPaid, packageAmount);
+  // Compute extended windows including all freezes (each freeze in paid window
+  // pushes the paid boundary by 1; each freeze in unpaid pushes total by 1).
+  const { extPaidDays, extTotalDays } = useMemo(() => {
+    let fp = 0, fu = 0;
+    const sorted = [...allFreezeISOs].sort();
+    for (const iso of sorted) {
+      const d = new Date(iso); d.setHours(0, 0, 0, 0);
+      const off = Math.floor((d.getTime() - joinD.getTime()) / 86400000);
+      if (off < 0) continue;
+      if (off < basePaidDays + fp) fp++;
+      else if (off < totalDays + fp + fu) fu++;
+    }
+    return { extPaidDays: basePaidDays + fp, extTotalDays: totalDays + fp + fu };
+  }, [allFreezeISOs, basePaidDays, totalDays, joinD]);
 
   const isoOf = (day: number) =>
     `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
