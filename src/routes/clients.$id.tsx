@@ -31,6 +31,7 @@ function ClientDetail() {
   const { data: c, isLoading } = useClient(id);
   const month = currentMonthISO();
   const { data: att = [] } = useAttendance(month, id);
+  const { data: allFreezes = [] } = useAllFreezes(id);
   const update = useUpdateClient();
   const { allowed: canRecordPayment } = useCan("payments.create");
   const [payOpen, setPayOpen] = useState(false);
