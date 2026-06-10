@@ -442,6 +442,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_primary_admin: { Args: { _user_id: string }; Returns: boolean }
       list_assignable_trainers: {
         Args: never
         Returns: {
