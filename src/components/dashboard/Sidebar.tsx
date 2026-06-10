@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { useIsAdmin, useUserRole } from "@/lib/useRole";
 import { useUnreadCount } from "@/lib/notifications";
 import { useMyPermissions } from "@/lib/permissions";
-import { LayoutDashboard, Users, CalendarCheck, BadgeCheck, Trophy, FileBarChart2, User, Dumbbell, Shield, ScrollText, Bell, LayoutGrid } from "lucide-react";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 
