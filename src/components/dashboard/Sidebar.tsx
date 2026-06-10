@@ -36,7 +36,13 @@ const adminExtras: NavItem[] = [
 function useNavItems() {
   const { isAdmin } = useIsAdmin();
   const { data: role } = useUserRole();
-  const base = role === "receptionist" ? receptionistItems : trainerItems;
+  const { data: perms } = useMyPermissions();
+  let base = role === "receptionist" ? [...receptionistItems] : trainerItems;
+  if (role === "receptionist" && perms?.has("reports.view") && !base.some((i) => i.to === "/reports")) {
+    const idx = base.findIndex((i) => i.to === "/profile");
+    const reportsItem = { to: "/reports", label: "Reports", icon: FileBarChart2 };
+    base = idx === -1 ? [...base, reportsItem] : [...base.slice(0, idx), reportsItem, ...base.slice(idx)];
+  }
   const items = isAdmin ? [...trainerItems, ...adminExtras] : base;
   return { items, role, isAdmin };
 }
