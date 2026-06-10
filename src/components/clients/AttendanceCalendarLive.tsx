@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAttendance, useMarkAttendance, useFreezeRange, useUnfreezeAttendance } from "@/lib/queries";
+import { useAttendance, useMarkAttendance, useFreezeRange, useUnfreezeAttendance, useAllFreezes } from "@/lib/queries";
 import { toast } from "sonner";
 import { eligibleDaysFor } from "@/lib/incentive";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
