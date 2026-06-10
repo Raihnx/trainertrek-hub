@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — ForgeFit" }] }),
+  head: () => ({ meta: [{ title: "Notifications — ZAK's GYM" }] }),
   component: NotificationsPage,
 });
 

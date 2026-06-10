@@ -6,7 +6,7 @@ import { useAppStore } from "@/lib/app-store";
 import { monthRange } from "@/lib/incentive";
 
 export const Route = createFileRoute("/incentives")({
-  head: () => ({ meta: [{ title: "Incentives — ForgeFit" }, { name: "description", content: "Track incentives and revenue." }] }),
+  head: () => ({ meta: [{ title: "Incentives — ZAK's GYM" }, { name: "description", content: "Track incentives and revenue." }] }),
   component: IncentivesPage,
 });
 

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { uploadAvatar } from "@/lib/upload";
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [{ title: "Profile — ForgeFit" }, { name: "description", content: "Trainer profile and credentials." }] }),
+  head: () => ({ meta: [{ title: "Profile — ZAK's GYM" }, { name: "description", content: "Trainer profile and credentials." }] }),
   component: ProfilePage,
 });
 

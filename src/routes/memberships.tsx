@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { useClients } from "@/lib/queries";
 
 export const Route = createFileRoute("/memberships")({
-  head: () => ({ meta: [{ title: "Memberships — ForgeFit" }, { name: "description", content: "Track active, expiring and expired client memberships." }] }),
+  head: () => ({ meta: [{ title: "Memberships — ZAK's GYM" }, { name: "description", content: "Track active, expiring and expired client memberships." }] }),
   component: MembershipsPage,
 });
 

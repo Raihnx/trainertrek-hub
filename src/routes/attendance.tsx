@@ -6,7 +6,7 @@ import { TodaySessions } from "@/components/dashboard/TodaySessions";
 import { monthRange } from "@/lib/incentive";
 
 export const Route = createFileRoute("/attendance")({
-  head: () => ({ meta: [{ title: "Attendance — ForgeFit" }, { name: "description", content: "Track session attendance for all PT clients." }] }),
+  head: () => ({ meta: [{ title: "Attendance — ZAK's GYM" }, { name: "description", content: "Track session attendance for all PT clients." }] }),
   component: AttendancePage,
 });
 
