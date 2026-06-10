@@ -105,6 +105,8 @@ function TrainersOverviewPage() {
         </p>
       </div>
 
+      <TrainerAvailability />
+
       {tLoading || cLoading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">Loading trainers…</div>
       ) : trainerColumns.length === 0 ? (
