@@ -161,31 +161,31 @@ export function AttendanceCalendarLive({
   };
 
   return (
-    <div className="glass rounded-2xl p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" disabled={!canPrev} onClick={() => shift(-1)} className="h-7 w-7">
-            <ChevronLeft className="h-4 w-4" />
+    <div className="glass rounded-2xl p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Button size="icon" variant="ghost" disabled={!canPrev} onClick={() => shift(-1)} className="h-9 w-9">
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h3 className="font-display text-sm font-semibold min-w-[140px] text-center">{monthName}</h3>
-          <Button size="icon" variant="ghost" disabled={!canNext} onClick={() => shift(1)} className="h-7 w-7">
-            <ChevronRight className="h-4 w-4" />
+          <h3 className="font-display text-lg font-semibold min-w-[180px] text-center">{monthName}</h3>
+          <Button size="icon" variant="ghost" disabled={!canNext} onClick={() => shift(1)} className="h-9 w-9">
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           {legend.map((l) => (
-            <span key={l.label} className="inline-flex items-center gap-1">
-              <span className={cn("h-1.5 w-1.5 rounded-full", l.cls)} />
+            <span key={l.label} className="inline-flex items-center gap-1.5">
+              <span className={cn("h-2.5 w-2.5 rounded-full", l.cls)} />
               {l.label}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[9px] uppercase tracking-wider text-muted-foreground">
-        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-0.5">{d}</div>)}
+      <div className="grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-wider text-muted-foreground">
+        {["S","M","T","W","T","F","S"].map((d, i) => <div key={i} className="py-1">{d}</div>)}
       </div>
-      <div className="mt-0.5 grid grid-cols-7 gap-1 max-w-sm">
+      <div className="mt-1 grid grid-cols-7 gap-2">
         {Array.from({ length: firstDow }).map((_, i) => <div key={`p${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const date = new Date(year, month, day);
@@ -213,9 +213,9 @@ export function AttendanceCalendarLive({
             <button
               disabled={isPast && !st}
               className={cn(
-                "relative aspect-square w-full rounded-md border text-[10px] font-medium transition",
+                "relative aspect-square w-full rounded-lg border text-sm font-medium transition",
                 st ? colorMap[status] : (baseShade || colorMap[status]),
-                isToday && "ring-1 ring-primary ring-offset-1 ring-offset-background",
+                isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
                 isPast && !st && "cursor-not-allowed opacity-60",
               )}
             >
@@ -225,7 +225,7 @@ export function AttendanceCalendarLive({
                 day
               )}
               {st === "freeze" && (
-                <Snowflake className="absolute right-0 top-0 h-2 w-2 text-warning" />
+                <Snowflake className="absolute right-1 top-1 h-3.5 w-3.5 text-warning" />
               )}
             </button>
           );
@@ -241,11 +241,11 @@ export function AttendanceCalendarLive({
           return (
             <Popover key={day}>
               <PopoverTrigger asChild>{cellBtn}</PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="center">
-                <div className="px-1 pb-2 text-[11px] text-muted-foreground">
+              <PopoverContent className="w-56 p-3" align="center">
+                <div className="px-1 pb-2 text-sm text-muted-foreground">
                   {date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                   {st === "freeze" ? (
                     <Button
                       size="sm"
@@ -264,7 +264,7 @@ export function AttendanceCalendarLive({
                         onClick={() => markStatus(iso, "present")}
                         className="justify-start gap-2 text-success hover:bg-success/10 hover:text-success"
                       >
-                        <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                        <Check className="h-4 w-4" /> Present {!isToday && <span className="ml-auto text-xs text-muted-foreground">today only</span>}
                       </Button>
                       <Button
                         size="sm"
@@ -273,7 +273,7 @@ export function AttendanceCalendarLive({
                         onClick={() => markStatus(iso, "absent")}
                         className="justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
-                        <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-[10px] text-muted-foreground">today only</span>}
+                        <X className="h-4 w-4" /> Absent {!isToday && <span className="ml-auto text-xs text-muted-foreground">today only</span>}
                       </Button>
                       <Button
                         size="sm"
@@ -293,12 +293,12 @@ export function AttendanceCalendarLive({
       </div>
 
       <Dialog open={freezeOpen} onOpenChange={setFreezeOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Freeze membership</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
               Starting{" "}
               <span className="font-medium text-foreground">
                 {freezeStartISO ? new Date(freezeStartISO).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
