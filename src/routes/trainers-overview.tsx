@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { logAudit } from "@/lib/audit";
 import { clientStatus } from "@/lib/incentive";
+import { TrainerAvailability } from "@/components/dashboard/TrainerAvailability";
 
 export const Route = createFileRoute("/trainers-overview")({
   head: () => ({
@@ -103,6 +104,8 @@ function TrainersOverviewPage() {
           See each trainer's daily sessions, availability and assign clients.
         </p>
       </div>
+
+      <TrainerAvailability />
 
       {tLoading || cLoading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">Loading trainers…</div>
